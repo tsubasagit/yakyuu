@@ -18,7 +18,7 @@ export default function ControlPage() {
             yakyuu コントロールパネル
           </h1>
           <a
-            href="/overlay"
+            href="#/overlay"
             target="_blank"
             rel="noopener noreferrer"
             className="text-accent hover:text-accent/80 text-sm underline"
