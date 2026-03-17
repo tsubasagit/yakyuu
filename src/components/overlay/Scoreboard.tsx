@@ -12,8 +12,10 @@ export default function Scoreboard() {
   const homeErrors = useGameStore((s) => s.homeErrors)
   const currentInning = useGameStore((s) => s.currentInning)
   const currentHalf = useGameStore((s) => s.currentHalf)
+  const count = useGameStore((s) => s.count)
+  const runners = useGameStore((s) => s.runners)
+  const pitchCount = useGameStore((s) => s.pitchCount)
 
-  // 常に9回分を表示（延長があればそれ以上）
   const minInnings = 9
   const displayCount = Math.max(minInnings, innings.length)
   const displayInnings = Array.from({ length: displayCount }, (_, i) => {
@@ -23,97 +25,164 @@ export default function Scoreboard() {
   })
 
   return (
-    <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 text-white text-sm font-mono">
-      <table className="border-collapse">
-        <thead>
-          <tr>
-            <th className="px-3 py-1 text-left text-accent font-bold min-w-[80px]">
-              &nbsp;
-            </th>
-            {displayInnings.map((inn) => (
-              <th
-                key={inn.inning}
-                className={`px-2 py-1 text-center min-w-[26px] ${
-                  inn.inning === currentInning
-                    ? 'text-accent font-bold'
-                    : 'text-gray-400'
-                }`}
-              >
-                {inn.inning}
-              </th>
-            ))}
-            <th className="px-2 py-1 text-center text-yellow-400 font-bold border-l border-gray-600 min-w-[30px]">
-              R
-            </th>
-            <th className="px-2 py-1 text-center text-green-400 font-bold min-w-[30px]">
-              H
-            </th>
-            <th className="px-2 py-1 text-center text-red-400 font-bold min-w-[30px]">
-              E
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {/* アウェイ（先攻） */}
-          <tr className={currentHalf === 'top' ? 'bg-white/10' : ''}>
-            <td className="px-3 py-1 font-bold">
-              <span className="inline-flex items-center gap-1">
-                <span
-                  className="w-1 h-4 rounded-sm inline-block"
-                  style={{ backgroundColor: awayTeam.color }}
-                />
-                {currentHalf === 'top' && (
-                  <span className="text-accent text-xs">▲</span>
-                )}
-                {awayTeam.shortName}
-              </span>
-            </td>
-            {displayInnings.map((inn) => (
-              <td key={inn.inning} className="px-2 py-1 text-center">
-                {inn.top ?? '-'}
+    <div className="font-mono text-sm select-none">
+      {/* メインスコアボード */}
+      <div className="scoreboard-main rounded-t-lg overflow-hidden">
+        <table className="border-collapse w-full">
+          <thead>
+            <tr className="bg-gray-900/95">
+              <th className="w-[100px]" />
+              {displayInnings.map((inn) => (
+                <th
+                  key={inn.inning}
+                  className={`px-1.5 py-1 text-center min-w-[24px] text-xs ${
+                    inn.inning === currentInning
+                      ? 'text-white bg-white/15 font-bold'
+                      : 'text-gray-500'
+                  }`}
+                >
+                  {inn.inning}
+                </th>
+              ))}
+              <th className="px-2 py-1 text-center text-xs text-gray-400 border-l border-gray-600 min-w-[28px]">R</th>
+              <th className="px-2 py-1 text-center text-xs text-gray-400 min-w-[28px]">H</th>
+              <th className="px-2 py-1 text-center text-xs text-gray-400 min-w-[28px]">E</th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* アウェイ */}
+            <tr className="border-b border-gray-700/50">
+              <td className="py-1.5">
+                <div className="flex items-center">
+                  <div
+                    className="w-1 h-8 rounded-r"
+                    style={{ backgroundColor: awayTeam.color }}
+                  />
+                  <div className="flex items-center gap-1.5 px-2">
+                    {currentHalf === 'top' && (
+                      <span className="text-[8px] text-yellow-400">▶</span>
+                    )}
+                    <span className="text-white font-bold text-sm">{awayTeam.shortName}</span>
+                  </div>
+                </div>
               </td>
-            ))}
-            <td className="px-2 py-1 text-center font-bold border-l border-gray-600 text-yellow-400">
-              {awayTotal}
-            </td>
-            <td className="px-2 py-1 text-center font-bold text-green-400">
-              {awayHits}
-            </td>
-            <td className="px-2 py-1 text-center font-bold text-red-400">
-              {awayErrors}
-            </td>
-          </tr>
-          {/* ホーム（後攻） */}
-          <tr className={currentHalf === 'bottom' ? 'bg-white/10' : ''}>
-            <td className="px-3 py-1 font-bold">
-              <span className="inline-flex items-center gap-1">
-                <span
-                  className="w-1 h-4 rounded-sm inline-block"
-                  style={{ backgroundColor: homeTeam.color }}
-                />
-                {currentHalf === 'bottom' && (
-                  <span className="text-accent text-xs">▼</span>
-                )}
-                {homeTeam.shortName}
-              </span>
-            </td>
-            {displayInnings.map((inn) => (
-              <td key={inn.inning} className="px-2 py-1 text-center">
-                {inn.bottom ?? '-'}
+              {displayInnings.map((inn) => (
+                <td
+                  key={inn.inning}
+                  className={`px-1.5 py-1.5 text-center text-white text-xs ${
+                    inn.inning === currentInning && currentHalf === 'top'
+                      ? 'bg-white/10 font-bold'
+                      : ''
+                  }`}
+                >
+                  {inn.top ?? <span className="text-gray-600">-</span>}
+                </td>
+              ))}
+              <td className="px-2 py-1.5 text-center font-bold text-white text-base border-l border-gray-600">
+                {awayTotal}
               </td>
-            ))}
-            <td className="px-2 py-1 text-center font-bold border-l border-gray-600 text-yellow-400">
-              {homeTotal}
-            </td>
-            <td className="px-2 py-1 text-center font-bold text-green-400">
-              {homeHits}
-            </td>
-            <td className="px-2 py-1 text-center font-bold text-red-400">
-              {homeErrors}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <td className="px-2 py-1.5 text-center text-gray-300 text-xs">{awayHits}</td>
+              <td className="px-2 py-1.5 text-center text-gray-300 text-xs">{awayErrors}</td>
+            </tr>
+            {/* ホーム */}
+            <tr>
+              <td className="py-1.5">
+                <div className="flex items-center">
+                  <div
+                    className="w-1 h-8 rounded-r"
+                    style={{ backgroundColor: homeTeam.color }}
+                  />
+                  <div className="flex items-center gap-1.5 px-2">
+                    {currentHalf === 'bottom' && (
+                      <span className="text-[8px] text-yellow-400">▶</span>
+                    )}
+                    <span className="text-white font-bold text-sm">{homeTeam.shortName}</span>
+                  </div>
+                </div>
+              </td>
+              {displayInnings.map((inn) => (
+                <td
+                  key={inn.inning}
+                  className={`px-1.5 py-1.5 text-center text-white text-xs ${
+                    inn.inning === currentInning && currentHalf === 'bottom'
+                      ? 'bg-white/10 font-bold'
+                      : ''
+                  }`}
+                >
+                  {inn.bottom ?? <span className="text-gray-600">-</span>}
+                </td>
+              ))}
+              <td className="px-2 py-1.5 text-center font-bold text-white text-base border-l border-gray-600">
+                {homeTotal}
+              </td>
+              <td className="px-2 py-1.5 text-center text-gray-300 text-xs">{homeHits}</td>
+              <td className="px-2 py-1.5 text-center text-gray-300 text-xs">{homeErrors}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* ボトムバー: イニング + BSO + 走者 + 球数 */}
+      <div className="bg-gray-900/95 rounded-b-lg px-3 py-1.5 flex items-center gap-4 border-t border-gray-600/50">
+        {/* イニング */}
+        <div className="flex items-center gap-1">
+          <span className="text-yellow-400 text-xs font-bold">
+            {currentHalf === 'top' ? '▲' : '▼'}
+          </span>
+          <span className="text-white text-xs font-bold">
+            {currentInning}回
+          </span>
+        </div>
+
+        <div className="w-px h-4 bg-gray-600" />
+
+        {/* BSO */}
+        <div className="flex items-center gap-2">
+          <BSODots label="B" count={count.balls} max={4} color="bg-green-500" />
+          <BSODots label="S" count={count.strikes} max={3} color="bg-yellow-400" />
+          <BSODots label="O" count={count.outs} max={3} color="bg-red-500" />
+        </div>
+
+        <div className="w-px h-4 bg-gray-600" />
+
+        {/* ミニダイヤモンド */}
+        <MiniDiamond first={runners.first} second={runners.second} third={runners.third} />
+
+        {/* 球数 */}
+        <div className="text-gray-400 text-[10px] ml-auto">
+          <span className="text-gray-500">P</span>{' '}
+          <span className="text-white font-bold text-xs">{pitchCount}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function BSODots({ label, count, max, color }: { label: string; count: number; max: number; color: string }) {
+  return (
+    <div className="flex items-center gap-1">
+      <span className="text-gray-500 text-[10px] font-bold w-2">{label}</span>
+      {Array.from({ length: max }, (_, i) => (
+        <div
+          key={i}
+          className={`w-2.5 h-2.5 rounded-full ${
+            i < count ? color : 'bg-gray-700'
+          }`}
+        />
+      ))}
+    </div>
+  )
+}
+
+function MiniDiamond({ first, second, third }: { first: boolean; second: boolean; third: boolean }) {
+  const base = (on: boolean) =>
+    `w-2.5 h-2.5 rotate-45 ${on ? 'bg-yellow-400' : 'bg-gray-700'}`
+
+  return (
+    <div className="relative w-[22px] h-[22px]">
+      <div className={`absolute top-0 left-1/2 -translate-x-1/2 ${base(second)}`} />
+      <div className={`absolute top-1/2 left-0 -translate-y-1/2 ${base(third)}`} />
+      <div className={`absolute top-1/2 right-0 -translate-y-1/2 ${base(first)}`} />
     </div>
   )
 }

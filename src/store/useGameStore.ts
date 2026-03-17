@@ -54,6 +54,10 @@ interface GameActions {
   setGameOver: (over: boolean) => void
   newGame: () => void
   replaceState: (state: GameState) => void
+  subtractBall: () => void
+  subtractStrike: () => void
+  subtractOut: () => void
+  subtractRun: (team: 'away' | 'home') => void
   addPitch: () => void
   setPitchCount: (n: number) => void
   startGameTimer: () => void
@@ -235,6 +239,39 @@ export const useGameStore = create<GameStore>()(
 
       replaceState: (state) => set(state),
 
+      subtractBall: () =>
+        set((s) => ({
+          count: { ...s.count, balls: Math.max(0, s.count.balls - 1) },
+        })),
+
+      subtractStrike: () =>
+        set((s) => ({
+          count: { ...s.count, strikes: Math.max(0, s.count.strikes - 1) },
+        })),
+
+      subtractOut: () =>
+        set((s) => ({
+          count: { ...s.count, outs: Math.max(0, s.count.outs - 1) },
+        })),
+
+      subtractRun: (team) =>
+        set((s) => {
+          const innings = [...s.innings]
+          const currentIdx = innings.findIndex(
+            (inn) => inn.inning === s.currentInning,
+          )
+          if (currentIdx === -1) return s
+
+          const inn = { ...innings[currentIdx]! }
+          const half = team === 'away' ? 'top' as const : 'bottom' as const
+          const current = inn[half] ?? 0
+          if (current <= 0) return s
+          inn[half] = current - 1
+          innings[currentIdx] = inn
+
+          return recalcTotals({ ...extractGameState(s), innings })
+        }),
+
       addPitch: () => set((s) => ({ pitchCount: s.pitchCount + 1 })),
 
       setPitchCount: (n) => set({ pitchCount: n }),
@@ -250,7 +287,7 @@ export const useGameStore = create<GameStore>()(
         if (type) {
           setTimeout(() => {
             set({ activeEffect: null, effectTimestamp: 0 })
-          }, 3000)
+          }, 6000)
         }
       },
 

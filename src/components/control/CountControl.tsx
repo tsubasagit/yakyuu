@@ -6,6 +6,9 @@ export default function CountControl() {
   const addStrike = useGameStore((s) => s.addStrike)
   const addOut = useGameStore((s) => s.addOut)
   const resetCount = useGameStore((s) => s.resetCount)
+  const subtractBall = useGameStore((s) => s.subtractBall)
+  const subtractStrike = useGameStore((s) => s.subtractStrike)
+  const subtractOut = useGameStore((s) => s.subtractOut)
   const pitchCount = useGameStore((s) => s.pitchCount)
   const setPitchCount = useGameStore((s) => s.setPitchCount)
 
@@ -22,12 +25,21 @@ export default function CountControl() {
               {count.balls}
             </span>
           </div>
-          <button
-            onClick={addBall}
-            className="w-full bg-green-700 hover:bg-green-600 text-white px-3 py-2 rounded text-sm font-bold"
-          >
-            ボール +1
-          </button>
+          <div className="flex gap-1">
+            <button
+              onClick={subtractBall}
+              disabled={count.balls <= 0}
+              className="flex-1 bg-green-900 hover:bg-green-800 disabled:opacity-30 text-white px-2 py-2 rounded text-sm font-bold"
+            >
+              -1
+            </button>
+            <button
+              onClick={addBall}
+              className="flex-1 bg-green-700 hover:bg-green-600 text-white px-2 py-2 rounded text-sm font-bold"
+            >
+              +1
+            </button>
+          </div>
         </div>
 
         {/* ストライク */}
@@ -38,12 +50,21 @@ export default function CountControl() {
               {count.strikes}
             </span>
           </div>
-          <button
-            onClick={addStrike}
-            className="w-full bg-yellow-700 hover:bg-yellow-600 text-white px-3 py-2 rounded text-sm font-bold"
-          >
-            ストライク +1
-          </button>
+          <div className="flex gap-1">
+            <button
+              onClick={subtractStrike}
+              disabled={count.strikes <= 0}
+              className="flex-1 bg-yellow-900 hover:bg-yellow-800 disabled:opacity-30 text-white px-2 py-2 rounded text-sm font-bold"
+            >
+              -1
+            </button>
+            <button
+              onClick={addStrike}
+              className="flex-1 bg-yellow-700 hover:bg-yellow-600 text-white px-2 py-2 rounded text-sm font-bold"
+            >
+              +1
+            </button>
+          </div>
         </div>
 
         {/* アウト */}
@@ -54,12 +75,21 @@ export default function CountControl() {
               {count.outs}
             </span>
           </div>
-          <button
-            onClick={addOut}
-            className="w-full bg-red-700 hover:bg-red-600 text-white px-3 py-2 rounded text-sm font-bold"
-          >
-            アウト +1
-          </button>
+          <div className="flex gap-1">
+            <button
+              onClick={subtractOut}
+              disabled={count.outs <= 0}
+              className="flex-1 bg-red-900 hover:bg-red-800 disabled:opacity-30 text-white px-2 py-2 rounded text-sm font-bold"
+            >
+              -1
+            </button>
+            <button
+              onClick={addOut}
+              className="flex-1 bg-red-700 hover:bg-red-600 text-white px-2 py-2 rounded text-sm font-bold"
+            >
+              +1
+            </button>
+          </div>
         </div>
       </div>
 

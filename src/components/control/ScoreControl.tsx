@@ -14,6 +14,7 @@ export default function ScoreControl() {
   const currentInning = useGameStore((s) => s.currentInning)
   const currentHalf = useGameStore((s) => s.currentHalf)
   const addRun = useGameStore((s) => s.addRun)
+  const subtractRun = useGameStore((s) => s.subtractRun)
   const setInningScore = useGameStore((s) => s.setInningScore)
   const addHit = useGameStore((s) => s.addHit)
   const addError = useGameStore((s) => s.addError)
@@ -51,43 +52,56 @@ export default function ScoreControl() {
     <div className="bg-gray-800 rounded-lg p-4 space-y-3">
       <h2 className="text-white font-bold text-lg">得点・安打・失策</h2>
 
-      {/* クイック操作ボタン */}
-      <div className="grid grid-cols-3 gap-2">
+      {/* クイック操作ボタン — アウェイ */}
+      <div className="grid grid-cols-4 gap-2">
+        <button
+          onClick={() => subtractRun('away')}
+          className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-sm font-bold"
+        >
+          {awayTeam.shortName} -1点
+        </button>
         <button
           onClick={() => addRun('away')}
-          className="bg-accent hover:bg-accent/80 text-white px-3 py-2 rounded text-sm font-bold"
+          className="bg-accent hover:bg-accent/80 text-white px-2 py-2 rounded text-sm font-bold"
         >
           {awayTeam.shortName} +1点
         </button>
         <button
           onClick={() => addHit('away')}
-          className="bg-green-700 hover:bg-green-600 text-white px-3 py-2 rounded text-sm font-bold"
+          className="bg-green-700 hover:bg-green-600 text-white px-2 py-2 rounded text-sm font-bold"
         >
           {awayTeam.shortName} +1H
         </button>
         <button
           onClick={() => addError('home')}
-          className="bg-red-700 hover:bg-red-600 text-white px-3 py-2 rounded text-sm font-bold"
+          className="bg-red-700 hover:bg-red-600 text-white px-2 py-2 rounded text-sm font-bold"
         >
           {homeTeam.shortName} +1E
         </button>
       </div>
-      <div className="grid grid-cols-3 gap-2">
+      {/* クイック操作ボタン — ホーム */}
+      <div className="grid grid-cols-4 gap-2">
+        <button
+          onClick={() => subtractRun('home')}
+          className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-sm font-bold"
+        >
+          {homeTeam.shortName} -1点
+        </button>
         <button
           onClick={() => addRun('home')}
-          className="bg-accent hover:bg-accent/80 text-white px-3 py-2 rounded text-sm font-bold"
+          className="bg-accent hover:bg-accent/80 text-white px-2 py-2 rounded text-sm font-bold"
         >
           {homeTeam.shortName} +1点
         </button>
         <button
           onClick={() => addHit('home')}
-          className="bg-green-700 hover:bg-green-600 text-white px-3 py-2 rounded text-sm font-bold"
+          className="bg-green-700 hover:bg-green-600 text-white px-2 py-2 rounded text-sm font-bold"
         >
           {homeTeam.shortName} +1H
         </button>
         <button
           onClick={() => addError('away')}
-          className="bg-red-700 hover:bg-red-600 text-white px-3 py-2 rounded text-sm font-bold"
+          className="bg-red-700 hover:bg-red-600 text-white px-2 py-2 rounded text-sm font-bold"
         >
           {awayTeam.shortName} +1E
         </button>
