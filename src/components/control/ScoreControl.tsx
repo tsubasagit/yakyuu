@@ -53,7 +53,7 @@ export default function ScoreControl() {
       <h2 className="text-white font-bold text-lg">得点・安打・失策</h2>
 
       {/* クイック操作ボタン — アウェイ */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-5 gap-2">
         <button
           onClick={() => subtractRun('away')}
           className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-sm font-bold"
@@ -73,14 +73,20 @@ export default function ScoreControl() {
           {awayTeam.shortName} +1H
         </button>
         <button
-          onClick={() => addError('home')}
+          onClick={() => addError('away')}
           className="bg-red-700 hover:bg-red-600 text-white px-2 py-2 rounded text-sm font-bold"
         >
-          {homeTeam.shortName} +1E
+          {awayTeam.shortName} +1E
+        </button>
+        <button
+          onClick={() => setErrors('away', Math.max(0, awayErrors - 1))}
+          className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-sm font-bold"
+        >
+          {awayTeam.shortName} -1E
         </button>
       </div>
       {/* クイック操作ボタン — ホーム */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-5 gap-2">
         <button
           onClick={() => subtractRun('home')}
           className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-sm font-bold"
@@ -100,10 +106,16 @@ export default function ScoreControl() {
           {homeTeam.shortName} +1H
         </button>
         <button
-          onClick={() => addError('away')}
+          onClick={() => addError('home')}
           className="bg-red-700 hover:bg-red-600 text-white px-2 py-2 rounded text-sm font-bold"
         >
-          {awayTeam.shortName} +1E
+          {homeTeam.shortName} +1E
+        </button>
+        <button
+          onClick={() => setErrors('home', Math.max(0, homeErrors - 1))}
+          className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-sm font-bold"
+        >
+          {homeTeam.shortName} -1E
         </button>
       </div>
 

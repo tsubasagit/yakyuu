@@ -66,18 +66,25 @@ export default function Scoreboard() {
                   </div>
                 </div>
               </td>
-              {displayInnings.map((inn) => (
-                <td
-                  key={inn.inning}
-                  className={`px-1.5 py-1.5 text-center text-white text-xs ${
-                    inn.inning === currentInning && currentHalf === 'top'
-                      ? 'bg-white/10 font-bold'
-                      : ''
-                  }`}
-                >
-                  {inn.top ?? <span className="text-gray-600">-</span>}
-                </td>
-              ))}
+              {displayInnings.map((inn) => {
+                // 表（away）: 現在イニング以前は完了扱い → null を 0 表示
+                const topPlayed = inn.inning <= currentInning
+                return (
+                  <td
+                    key={inn.inning}
+                    className={`px-1.5 py-1.5 text-center text-white text-xs ${
+                      inn.inning === currentInning && currentHalf === 'top'
+                        ? 'bg-white/10 font-bold'
+                        : ''
+                    }`}
+                  >
+                    {topPlayed
+                      ? (inn.top ?? 0)
+                      : <span className="text-gray-600">-</span>
+                    }
+                  </td>
+                )
+              })}
               <td className="px-2 py-1.5 text-center font-bold text-white text-base border-l border-gray-600">
                 {awayTotal}
               </td>
@@ -100,18 +107,26 @@ export default function Scoreboard() {
                   </div>
                 </div>
               </td>
-              {displayInnings.map((inn) => (
-                <td
-                  key={inn.inning}
-                  className={`px-1.5 py-1.5 text-center text-white text-xs ${
-                    inn.inning === currentInning && currentHalf === 'bottom'
-                      ? 'bg-white/10 font-bold'
-                      : ''
-                  }`}
-                >
-                  {inn.bottom ?? <span className="text-gray-600">-</span>}
-                </td>
-              ))}
+              {displayInnings.map((inn) => {
+                // 裏（home）: 前イニング以前 or 現在イニングの裏なら完了扱い
+                const bottomPlayed = inn.inning < currentInning ||
+                  (inn.inning === currentInning && currentHalf === 'bottom')
+                return (
+                  <td
+                    key={inn.inning}
+                    className={`px-1.5 py-1.5 text-center text-white text-xs ${
+                      inn.inning === currentInning && currentHalf === 'bottom'
+                        ? 'bg-white/10 font-bold'
+                        : ''
+                    }`}
+                  >
+                    {bottomPlayed
+                      ? (inn.bottom ?? 0)
+                      : <span className="text-gray-600">-</span>
+                    }
+                  </td>
+                )
+              })}
               <td className="px-2 py-1.5 text-center font-bold text-white text-base border-l border-gray-600">
                 {homeTotal}
               </td>

@@ -1,5 +1,6 @@
 import { useGameStore } from '../../store/useGameStore'
 import type { PlayerInfo } from '../../types'
+import { formatBatterStat } from '../../types'
 
 export default function LineupCard() {
   const awayTeam = useGameStore((s) => s.awayTeam)
@@ -18,7 +19,8 @@ export default function LineupCard() {
   const currentIdx = isTop ? awayBatterIndex : homeBatterIndex
   const side = isTop ? 'away' : 'home'
 
-  const hasPlayers = lineup.some((p) => p.name.length > 0)
+  const batters = lineup.slice(0, 9)
+  const hasPlayers = batters.some((p) => p.name.length > 0)
   if (!hasPlayers) return null
 
   return (
@@ -38,11 +40,12 @@ export default function LineupCard() {
         <span className="text-yellow-400 text-[10px] ml-auto">攻撃中</span>
       </div>
 
-      {/* 打順 */}
+      {/* 打順（1-9番のみ） */}
       <div className="flex flex-col">
-        {lineup.map((player, idx) => {
+        {batters.map((player, idx) => {
           if (!player.name) return null
           const isCurrent = idx === currentIdx
+          const statStr = formatBatterStat(player)
           return (
             <div
               key={player.order}
@@ -64,10 +67,11 @@ export default function LineupCard() {
                 {player.position}
               </span>
               <span className="flex-1 truncate">{player.name}</span>
-              <span className="text-gray-500 text-[10px]">#{player.number}</span>
-              <span className="text-yellow-400/70 font-mono w-9 text-right text-[10px]">
-                {player.battingAvg}
-              </span>
+              {statStr && (
+                <span className="text-yellow-400/70 font-mono text-[10px] shrink-0">
+                  {statStr}
+                </span>
+              )}
             </div>
           )
         })}
@@ -86,12 +90,14 @@ function PitcherBar({ pitcher, pitchCount }: { pitcher: PlayerInfo; pitchCount: 
     <div className="mt-2 pt-1.5 border-t border-gray-600/50 px-2 flex items-center gap-2 text-xs">
       <span className="text-red-400 font-bold text-[10px]">投手</span>
       <span className="font-bold text-white">{pitcher.name}</span>
-      {pitcher.number && (
-        <span className="text-gray-500 text-[10px]">#{pitcher.number}</span>
+      {pitcher.statLabel && (
+        <span className="text-yellow-400/70 text-[10px]">
+          {pitcher.statLabel}
+        </span>
       )}
       {pitcher.stat && (
         <span className="text-yellow-400/70 text-[10px]">
-          {pitcher.statLabel} {pitcher.stat}
+          {pitcher.stat}
         </span>
       )}
       <span className="text-gray-400 text-[10px] ml-auto">{pitchCount}球</span>

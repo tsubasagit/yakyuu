@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { EffectType, GameState, HalfInning, LineupPlayer, PlayerInfo, Runners } from '../types'
-import { initialGameState, initialPlayerInfo } from '../types'
+import { initialGameState, initialPlayerInfo, formatBatterStat } from '../types'
 import { broadcastState } from '../lib/sync'
 
 const DATA_KEYS: (keyof GameState)[] = [
@@ -65,6 +65,7 @@ interface GameActions {
   setTicker: (text: string) => void
   triggerEffect: (type: EffectType) => void
   setTeamColor: (team: 'away' | 'home', color: string) => void
+  rewindInning: () => void
 }
 
 type GameStore = GameState & GameActions
@@ -176,16 +177,29 @@ export const useGameStore = create<GameStore>()(
       selectBatter: (team, index) =>
         set((s) => {
           const key = team === 'away' ? 'awayLineup' : 'homeLineup'
-          const idxKey = team === 'away' ? 'awayBatterIndex' : 'homeBatterIndex'
           const player = s[key][index]
           if (!player) return s
+
+          // 10番目（index 9）は投手 → 投手として登録
+          if (index === 9) {
+            return {
+              pitcher: {
+                name: player.name,
+                number: player.number,
+                stat: player.record || '',
+                statLabel: player.appearances ? `${player.appearances}登板` : '',
+              },
+            }
+          }
+
+          const idxKey = team === 'away' ? 'awayBatterIndex' : 'homeBatterIndex'
           return {
             [idxKey]: index,
             batter: {
               name: player.name,
               number: player.number,
-              stat: player.battingAvg,
-              statLabel: '打率',
+              stat: formatBatterStat(player),
+              statLabel: '',
             },
           }
         }),
@@ -196,7 +210,7 @@ export const useGameStore = create<GameStore>()(
           const key = isAway ? 'awayLineup' : 'homeLineup'
           const idxKey = isAway ? 'awayBatterIndex' : 'homeBatterIndex'
           const currentIdx = s[idxKey]
-          const nextIdx = (currentIdx + 1) % 9
+          const nextIdx = (currentIdx + 1) % 9  // 1-9番のみ巡回（10番目=投手は除外）
           const player = s[key][nextIdx]
           if (!player) return s
           return {
@@ -204,8 +218,8 @@ export const useGameStore = create<GameStore>()(
             batter: {
               name: player.name,
               number: player.number,
-              stat: player.battingAvg,
-              statLabel: '打率',
+              stat: formatBatterStat(player),
+              statLabel: '',
             },
             count: { ...s.count, balls: 0, strikes: 0 },
           }
@@ -297,6 +311,26 @@ export const useGameStore = create<GameStore>()(
             return { awayTeam: { ...s.awayTeam, color } }
           }
           return { homeTeam: { ...s.homeTeam, color } }
+        }),
+
+      rewindInning: () =>
+        set((s) => {
+          if (s.currentHalf === 'bottom') {
+            // 裏→表に戻す
+            return {
+              currentHalf: 'top' as const,
+              count: { balls: 0, strikes: 0, outs: 0 },
+              runners: { first: false, second: false, third: false },
+            }
+          }
+          // 表→前イニングの裏に戻す
+          if (s.currentInning <= 1) return s
+          return {
+            currentInning: s.currentInning - 1,
+            currentHalf: 'bottom' as const,
+            count: { balls: 0, strikes: 0, outs: 0 },
+            runners: { first: false, second: false, third: false },
+          }
         }),
     }),
     {

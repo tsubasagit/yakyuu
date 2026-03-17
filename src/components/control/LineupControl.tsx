@@ -5,7 +5,7 @@ import { ORIX_LINEUP, HAWKS_LINEUP } from '../../types'
 
 const POSITIONS: Position[] = ['投', '捕', '一', '二', '三', '遊', '左', '中', '右', 'DH']
 
-function LineupRow({
+function BatterRow({
   player,
   isCurrent,
   onSelect,
@@ -42,16 +42,28 @@ function LineupRow({
         onChange={(e) => onChange({ ...player, name: e.target.value })}
       />
       <input
+        className="bg-gray-700 text-white rounded px-1 py-1 text-xs w-12 shrink-0"
+        placeholder="打率"
+        value={player.battingAvg || ''}
+        onChange={(e) => onChange({ ...player, battingAvg: e.target.value })}
+      />
+      <input
         className="bg-gray-700 text-white rounded px-1 py-1 text-xs w-10 shrink-0"
-        placeholder="#"
-        value={player.number}
-        onChange={(e) => onChange({ ...player, number: e.target.value })}
+        placeholder="HR"
+        value={player.homeRuns || ''}
+        onChange={(e) => onChange({ ...player, homeRuns: e.target.value })}
+      />
+      <input
+        className="bg-gray-700 text-white rounded px-1 py-1 text-xs w-10 shrink-0"
+        placeholder="打点"
+        value={player.rbi || ''}
+        onChange={(e) => onChange({ ...player, rbi: e.target.value })}
       />
       <input
         className="bg-gray-700 text-white rounded px-1 py-1 text-xs w-14 shrink-0"
-        placeholder="打率"
-        value={player.battingAvg}
-        onChange={(e) => onChange({ ...player, battingAvg: e.target.value })}
+        placeholder="OPS"
+        value={player.ops || ''}
+        onChange={(e) => onChange({ ...player, ops: e.target.value })}
       />
       <button
         onClick={onSelect}
@@ -63,6 +75,52 @@ function LineupRow({
         title="この打者を選択"
       >
         打席
+      </button>
+    </div>
+  )
+}
+
+function PitcherRow({
+  player,
+  onSelect,
+  onChange,
+}: {
+  player: LineupPlayer
+  onSelect: () => void
+  onChange: (p: LineupPlayer) => void
+}) {
+  return (
+    <div className="flex items-center gap-1.5 text-sm rounded px-1.5 py-1 bg-red-900/20 border border-red-800/30">
+      <span className="text-red-400 w-4 text-center text-xs shrink-0 font-bold">
+        P
+      </span>
+      <span className="text-red-400 text-xs w-12 shrink-0 text-center font-bold">
+        投
+      </span>
+      <input
+        className="bg-gray-700 text-white rounded px-2 py-1 text-xs flex-1 min-w-0"
+        placeholder="投手名"
+        value={player.name}
+        onChange={(e) => onChange({ ...player, name: e.target.value })}
+      />
+      <input
+        className="bg-gray-700 text-white rounded px-1 py-1 text-xs w-10 shrink-0"
+        placeholder="登板"
+        value={player.appearances || ''}
+        onChange={(e) => onChange({ ...player, appearances: e.target.value })}
+      />
+      <input
+        className="bg-gray-700 text-white rounded px-1 py-1 text-xs w-20 shrink-0"
+        placeholder="勝敗"
+        value={player.record || ''}
+        onChange={(e) => onChange({ ...player, record: e.target.value })}
+      />
+      <button
+        onClick={onSelect}
+        className="text-xs px-2 py-1 rounded shrink-0 bg-red-700 hover:bg-red-600 text-white font-bold"
+        title="この投手を登板"
+      >
+        登板
       </button>
     </div>
   )
@@ -142,10 +200,10 @@ export default function LineupControl() {
         </button>
       </div>
 
-      {/* ラインナップ */}
+      {/* ラインナップ（1-9番打者） */}
       <div className="space-y-0.5">
-        {lineup.map((player, idx) => (
-          <LineupRow
+        {lineup.slice(0, 9).map((player, idx) => (
+          <BatterRow
             key={player.order}
             player={player}
             isCurrent={idx === batterIdx && isAttacking}
@@ -154,6 +212,15 @@ export default function LineupControl() {
           />
         ))}
       </div>
+
+      {/* 投手（10番目） */}
+      {lineup[9] && (
+        <PitcherRow
+          player={lineup[9]}
+          onSelect={() => selectBatter(activeTeam, 9)}
+          onChange={(p) => setLineupPlayer(activeTeam, 9, p)}
+        />
+      )}
     </div>
   )
 }

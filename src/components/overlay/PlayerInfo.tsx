@@ -16,12 +16,9 @@ export default function PlayerInfo() {
         <div className="flex items-center gap-2">
           <span className="text-accent font-bold text-xs">打者</span>
           <span className="font-bold">{batter.name}</span>
-          {batter.number && (
-            <span className="text-gray-400">#{batter.number}</span>
-          )}
           {batter.stat && (
             <span className="text-yellow-400 text-xs">
-              {batter.statLabel || ''} {batter.stat}
+              {batter.statLabel ? `${batter.statLabel} ` : ''}{batter.stat}
             </span>
           )}
         </div>
@@ -30,12 +27,14 @@ export default function PlayerInfo() {
         <div className="flex items-center gap-2">
           <span className="text-red-400 font-bold text-xs">投手</span>
           <span className="font-bold">{pitcher.name}</span>
-          {pitcher.number && (
-            <span className="text-gray-400">#{pitcher.number}</span>
+          {pitcher.statLabel && (
+            <span className="text-yellow-400 text-xs">
+              {pitcher.statLabel}
+            </span>
           )}
           {pitcher.stat && (
             <span className="text-yellow-400 text-xs">
-              {pitcher.statLabel || ''} {pitcher.stat}
+              {pitcher.stat}
             </span>
           )}
           <span className="text-gray-300 text-xs ml-1">
