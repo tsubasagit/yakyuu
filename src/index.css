@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* OBS ブラウザソース用: 透明背景 */
+html, body, #root {
+  background: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+/* オーバーレイ用フォント */
+body {
+  font-family: 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 速報テロップ マーキー */
+@keyframes ticker-scroll {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.ticker-scroll {
+  animation: ticker-scroll 15s linear infinite;
+}
+
+/* エフェクトアニメーション */
+@keyframes effect-pop {
+  0% { opacity: 0; transform: scale(0.3); }
+  30% { opacity: 1; transform: scale(1.1); }
+  50% { transform: scale(1); }
+  80% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+.effect-animate {
+  animation: effect-pop 3s ease-out forwards;
+}
