@@ -55,6 +55,51 @@ body {
   backdrop-filter: blur(8px);
 }
 
+/* マスコット ふわふわ */
+@keyframes mascot-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.mascot-float {
+  animation: mascot-float 3s ease-in-out infinite;
+}
+
+/* マスコット お祝い */
+@keyframes mascot-celebration {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.1) rotate(-5deg); }
+  50% { transform: scale(1) rotate(5deg); }
+  75% { transform: scale(1.1) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.mascot-celebration {
+  animation: mascot-celebration 0.8s ease-in-out infinite;
+}
+
+/* チェンジ スライドバナー */
+@keyframes change-slide {
+  0% { transform: translateX(-100%); opacity: 0; }
+  15% { transform: translateX(0); opacity: 1; }
+  75% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+.change-slide {
+  animation: change-slide 4s ease-in-out forwards;
+}
+
+/* 待機画面パルス */
+@keyframes waiting-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+
+.waiting-pulse {
+  animation: waiting-pulse 2s ease-in-out infinite;
+}
+
 /* ドラッグハンドル */
 .drag-handle {
   cursor: grab;

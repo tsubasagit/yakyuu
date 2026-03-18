@@ -8,6 +8,7 @@ import PlayLogControl from '../components/control/PlayLogControl'
 import LineupControl from '../components/control/LineupControl'
 import TickerControl from '../components/control/TickerControl'
 import EffectControl from '../components/control/EffectControl'
+import MascotControl from '../components/control/MascotControl'
 
 export default function ControlPage() {
   return (
@@ -39,6 +40,7 @@ export default function ControlPage() {
             <ScoreControl />
             <LineupControl />
             <EffectControl />
+            <MascotControl />
             <TickerControl />
             <PlayLogControl />
           </div>

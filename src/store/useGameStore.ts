@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { EffectType, GameState, HalfInning, LineupPlayer, PlayerInfo, Runners } from '../types'
+import type { EffectType, GameState, HalfInning, LineupPlayer, MascotMode, PlayerInfo, Runners } from '../types'
 import { initialGameState, initialPlayerInfo, formatBatterStat } from '../types'
 import { broadcastState } from '../lib/sync'
 
@@ -11,6 +11,7 @@ const DATA_KEYS: (keyof GameState)[] = [
   'batter', 'pitcher', 'awayLineup', 'homeLineup',
   'awayBatterIndex', 'homeBatterIndex', 'playLog',
   'pitchCount', 'gameStartTime', 'ticker', 'activeEffect', 'effectTimestamp',
+  'showMascot', 'mascotMode', 'mascotImages', 'autoChangeEffect', 'showWaitingScreen',
 ]
 
 function extractGameState(store: GameState): GameState {
@@ -66,6 +67,11 @@ interface GameActions {
   triggerEffect: (type: EffectType) => void
   setTeamColor: (team: 'away' | 'home', color: string) => void
   rewindInning: () => void
+  setShowMascot: (show: boolean) => void
+  setMascotMode: (mode: MascotMode) => void
+  setMascotImage: (mode: string, dataUrl: string | null) => void
+  setAutoChangeEffect: (on: boolean) => void
+  setShowWaitingScreen: (show: boolean) => void
 }
 
 type GameStore = GameState & GameActions
@@ -290,7 +296,7 @@ export const useGameStore = create<GameStore>()(
 
       setPitchCount: (n) => set({ pitchCount: n }),
 
-      startGameTimer: () => set({ gameStartTime: Date.now() }),
+      startGameTimer: () => set({ gameStartTime: Date.now(), showWaitingScreen: false }),
 
       stopGameTimer: () => set({ gameStartTime: null }),
 
@@ -316,14 +322,12 @@ export const useGameStore = create<GameStore>()(
       rewindInning: () =>
         set((s) => {
           if (s.currentHalf === 'bottom') {
-            // 裏→表に戻す
             return {
               currentHalf: 'top' as const,
               count: { balls: 0, strikes: 0, outs: 0 },
               runners: { first: false, second: false, third: false },
             }
           }
-          // 表→前イニングの裏に戻す
           if (s.currentInning <= 1) return s
           return {
             currentInning: s.currentInning - 1,
@@ -332,6 +336,25 @@ export const useGameStore = create<GameStore>()(
             runners: { first: false, second: false, third: false },
           }
         }),
+
+      setShowMascot: (show) => set({ showMascot: show }),
+
+      setMascotMode: (mode) => set({ mascotMode: mode }),
+
+      setMascotImage: (mode, dataUrl) =>
+        set((s) => {
+          const mascotImages = { ...s.mascotImages }
+          if (dataUrl) {
+            mascotImages[mode] = dataUrl
+          } else {
+            delete mascotImages[mode]
+          }
+          return { mascotImages }
+        }),
+
+      setAutoChangeEffect: (on) => set({ autoChangeEffect: on }),
+
+      setShowWaitingScreen: (show) => set({ showWaitingScreen: show }),
     }),
     {
       name: 'yakyuu-game-state',
@@ -385,10 +408,15 @@ function applyWalk(s: GameState): Partial<GameState> {
 }
 
 function advanceInningPatch(s: GameState): Partial<GameState> {
-  const resetState = {
+  const resetState: Partial<GameState> = {
     count: { balls: 0, strikes: 0, outs: 0 },
     runners: { first: false, second: false, third: false },
     batter: { ...initialPlayerInfo },
+  }
+
+  if (s.autoChangeEffect) {
+    resetState.activeEffect = 'change'
+    resetState.effectTimestamp = Date.now()
   }
 
   if (s.currentHalf === 'top') {

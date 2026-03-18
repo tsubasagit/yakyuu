@@ -50,7 +50,9 @@ export interface PlayLogEntry {
   text: string
 }
 
-export type EffectType = 'homerun' | 'strikeout' | 'double' | 'triple' | null
+export type MascotMode = 'idle' | 'hidden' | 'celebration' | 'waiting'
+
+export type EffectType = 'homerun' | 'strikeout' | 'double' | 'triple' | 'hit' | 'steal' | 'fineplay' | 'error' | 'walk' | 'change' | null
 
 export interface Team {
   name: string
@@ -85,6 +87,11 @@ export interface GameState {
   ticker: string
   activeEffect: EffectType
   effectTimestamp: number
+  showMascot: boolean
+  mascotMode: MascotMode
+  mascotImages: Record<string, string>
+  autoChangeEffect: boolean
+  showWaitingScreen: boolean
 }
 
 export const initialPlayerInfo: PlayerInfo = {
@@ -168,6 +175,11 @@ export const initialGameState: GameState = {
   ticker: '',
   activeEffect: null,
   effectTimestamp: 0,
+  showMascot: false,
+  mascotMode: 'idle',
+  mascotImages: {},
+  autoChangeEffect: true,
+  showWaitingScreen: false,
 }
 
 export { emptyLineup }

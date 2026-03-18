@@ -12,6 +12,8 @@ export default function GameControl() {
   const startGameTimer = useGameStore((s) => s.startGameTimer)
   const stopGameTimer = useGameStore((s) => s.stopGameTimer)
   const setTeamColor = useGameStore((s) => s.setTeamColor)
+  const showWaitingScreen = useGameStore((s) => s.showWaitingScreen)
+  const setShowWaitingScreen = useGameStore((s) => s.setShowWaitingScreen)
 
   const [awayName, setAwayName] = useState(awayTeam.name)
   const [awayShort, setAwayShort] = useState(awayTeam.shortName)
@@ -119,6 +121,24 @@ export default function GameControl() {
         >
           新規試合
         </button>
+      </div>
+
+      {/* 待機画面 */}
+      <div className="flex items-center gap-3 pt-2 border-t border-gray-700">
+        <span className="text-gray-400 text-sm">待機画面</span>
+        <button
+          onClick={() => setShowWaitingScreen(!showWaitingScreen)}
+          className={`px-4 py-2 rounded text-sm font-bold ${
+            showWaitingScreen
+              ? 'bg-accent hover:bg-accent/80 text-white'
+              : 'bg-gray-600 hover:bg-gray-500 text-gray-300'
+          }`}
+        >
+          {showWaitingScreen ? '表示中' : '表示する'}
+        </button>
+        {showWaitingScreen && (
+          <span className="text-accent text-xs">タイマー開始で自動非表示</span>
+        )}
       </div>
 
       {/* タイマー */}

@@ -7,6 +7,8 @@ import LineupCard from '../components/overlay/LineupCard'
 import GameTimer from '../components/overlay/GameTimer'
 import Ticker from '../components/overlay/Ticker'
 import EffectOverlay from '../components/overlay/EffectOverlay'
+import Mascot from '../components/overlay/Mascot'
+import WaitingScreen from '../components/overlay/WaitingScreen'
 
 function DraggableBox({
   initialX,
@@ -63,8 +65,16 @@ export default function OverlayPage() {
       {/* 速報テロップ — 最下部 */}
       <Ticker />
 
+      {/* マスコット — 右下 */}
+      <DraggableBox initialX={1920 - 180} initialY={1080 - 180}>
+        <Mascot />
+      </DraggableBox>
+
       {/* エフェクト — 画面中央 */}
       <EffectOverlay />
+
+      {/* 待機画面 — 全面 */}
+      <WaitingScreen />
     </div>
   )
 }
