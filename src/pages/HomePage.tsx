@@ -75,6 +75,15 @@ export default function HomePage() {
             </a>
             {' '}/{' '}
             <a
+              href="https://github.com/tsubasagit/yakyuu/issues/new"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#538bb0] hover:underline"
+            >
+              ご質問・不具合報告
+            </a>
+            {' '}/{' '}
+            <a
               href="https://apptalenthub.co.jp"
               target="_blank"
               rel="noopener noreferrer"
