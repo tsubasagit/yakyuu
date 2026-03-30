@@ -358,6 +358,13 @@ export const useGameStore = create<GameStore>()(
     }),
     {
       name: 'yakyuu-game-state',
+      merge: (persisted, current) => ({
+        ...current,
+        ...(persisted as Partial<GameStore>),
+        // エフェクトは一時的な表示状態なので、リロード時にリセット
+        activeEffect: null,
+        effectTimestamp: 0,
+      }),
     },
   ),
 )

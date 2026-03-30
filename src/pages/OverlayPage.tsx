@@ -1,4 +1,5 @@
 import { useBroadcastSync } from '../hooks/useBroadcastSync'
+import { useStorageSync } from '../hooks/useStorageSync'
 import { useDraggable } from '../hooks/useDraggable'
 import Scoreboard from '../components/overlay/Scoreboard'
 import PlayerInfo from '../components/overlay/PlayerInfo'
@@ -34,6 +35,7 @@ function DraggableBox({
 
 export default function OverlayPage() {
   useBroadcastSync()
+  useStorageSync()
 
   return (
     <div className="w-[1920px] h-[1080px] relative select-none pointer-events-none">
