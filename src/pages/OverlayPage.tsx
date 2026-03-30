@@ -31,6 +31,8 @@ function useViewportScale() {
   return scale
 }
 
+const DEFAULT_POS = { x: 0, y: 0 }
+
 /** Zustand にドラッグ位置を永続化する DraggableBox
  *  ドラッグ中はローカル state で描画し、mouseUp で store に書き戻す */
 function DraggableBox({
@@ -40,18 +42,21 @@ function DraggableBox({
   id: string
   children: React.ReactNode
 }) {
-  const storePos = useGameStore((s) => s.overlayPositions[id]) ?? { x: 0, y: 0 }
+  const storePos = useGameStore((s) => s.overlayPositions?.[id]) ?? DEFAULT_POS
   const setOverlayPosition = useGameStore((s) => s.setOverlayPosition)
   const [localPos, setLocalPos] = useState(storePos)
   const dragging = useRef(false)
   const offset = useRef({ x: 0, y: 0 })
 
   // store 側が変わったら（sync 経由など）ローカルを追従
+  // 依存をプリミティブ値にして、オブジェクト参照変更での無限ループを防止
+  const storeX = storePos.x
+  const storeY = storePos.y
   useEffect(() => {
     if (!dragging.current) {
-      setLocalPos(storePos)
+      setLocalPos({ x: storeX, y: storeY })
     }
-  }, [storePos])
+  }, [storeX, storeY])
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent) => {
