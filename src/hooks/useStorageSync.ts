@@ -26,6 +26,10 @@ export function useStorageSync(): void {
         const state = parsed.state
         if (state) {
           replaceState(state)
+          // replaceState → Zustand persist が localStorage に書き戻すため、
+          // その値で lastRawRef を更新してフィードバックループを防止
+          const written = localStorage.getItem(STORAGE_KEY)
+          if (written) lastRawRef.current = written
         }
       } catch {
         // ignore parse errors
