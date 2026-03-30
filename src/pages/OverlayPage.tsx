@@ -1,6 +1,7 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBroadcastSync } from '../hooks/useBroadcastSync'
 import { useStorageSync } from '../hooks/useStorageSync'
-import { useDraggable } from '../hooks/useDraggable'
+import { useGameStore } from '../store/useGameStore'
 import Scoreboard from '../components/overlay/Scoreboard'
 import PlayerInfo from '../components/overlay/PlayerInfo'
 import PlayLog from '../components/overlay/PlayLog'
@@ -11,21 +12,85 @@ import EffectOverlay from '../components/overlay/EffectOverlay'
 import Mascot from '../components/overlay/Mascot'
 import WaitingScreen from '../components/overlay/WaitingScreen'
 
+const CANVAS_W = 1920
+const CANVAS_H = 1080
+
+/** ビューポートに合わせて 1920x1080 キャンバスを自動スケーリング */
+function useViewportScale() {
+  const [scale, setScale] = useState(1)
+  useEffect(() => {
+    function update() {
+      const sx = window.innerWidth / CANVAS_W
+      const sy = window.innerHeight / CANVAS_H
+      setScale(Math.min(sx, sy))
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+  return scale
+}
+
+/** Zustand にドラッグ位置を永続化する DraggableBox
+ *  ドラッグ中はローカル state で描画し、mouseUp で store に書き戻す */
 function DraggableBox({
-  initialX,
-  initialY,
+  id,
   children,
 }: {
-  initialX: number
-  initialY: number
+  id: string
   children: React.ReactNode
 }) {
-  const { pos, onMouseDown } = useDraggable({ x: initialX, y: initialY })
+  const storePos = useGameStore((s) => s.overlayPositions[id]) ?? { x: 0, y: 0 }
+  const setOverlayPosition = useGameStore((s) => s.setOverlayPosition)
+  const [localPos, setLocalPos] = useState(storePos)
+  const dragging = useRef(false)
+  const offset = useRef({ x: 0, y: 0 })
+
+  // store 側が変わったら（sync 経由など）ローカルを追従
+  useEffect(() => {
+    if (!dragging.current) {
+      setLocalPos(storePos)
+    }
+  }, [storePos])
+
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      dragging.current = true
+      offset.current = { x: e.clientX - localPos.x, y: e.clientY - localPos.y }
+      e.preventDefault()
+    },
+    [localPos],
+  )
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!dragging.current) return
+      setLocalPos({
+        x: e.clientX - offset.current.x,
+        y: e.clientY - offset.current.y,
+      })
+    }
+    const onMouseUp = () => {
+      if (!dragging.current) return
+      dragging.current = false
+      // ドラッグ終了時のみ store に書き込む（localStorage 書き込み削減）
+      setLocalPos((p) => {
+        setOverlayPosition(id, p)
+        return p
+      })
+    }
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [id, setOverlayPosition])
 
   return (
     <div
       className="absolute pointer-events-auto drag-handle"
-      style={{ left: pos.x, top: pos.y }}
+      style={{ left: localPos.x, top: localPos.y }}
       onMouseDown={onMouseDown}
     >
       {children}
@@ -33,34 +98,62 @@ function DraggableBox({
   )
 }
 
+const HEARTBEAT_KEY = 'yakyuu-overlay-heartbeat'
+
+/** オーバーレイが生きていることをコントロール側に伝えるハートビート */
+function useOverlayHeartbeat() {
+  useEffect(() => {
+    function beat() {
+      try {
+        localStorage.setItem(HEARTBEAT_KEY, String(Date.now()))
+      } catch {
+        // quota exceeded — 無視
+      }
+    }
+    beat()
+    const interval = setInterval(beat, 1500)
+    return () => clearInterval(interval)
+  }, [])
+}
+
 export default function OverlayPage() {
   useBroadcastSync()
   useStorageSync()
+  useOverlayHeartbeat()
+  const scale = useViewportScale()
 
   return (
-    <div className="w-[1920px] h-[1080px] relative select-none pointer-events-none">
+    <div
+      style={{
+        width: CANVAS_W,
+        height: CANVAS_H,
+        transform: scale < 1 ? `scale(${scale})` : undefined,
+        transformOrigin: 'top left',
+      }}
+      className="relative select-none pointer-events-none"
+    >
       {/* スコアボード（BSO・走者・球数 統合） — 左上 */}
-      <DraggableBox initialX={24} initialY={24}>
+      <DraggableBox id="scoreboard">
         <Scoreboard />
       </DraggableBox>
 
       {/* 経過時間 */}
-      <DraggableBox initialX={24} initialY={160}>
+      <DraggableBox id="timer">
         <GameTimer />
       </DraggableBox>
 
       {/* 両チーム打順 — 右上 */}
-      <DraggableBox initialX={1920 - 500} initialY={24}>
+      <DraggableBox id="lineup">
         <LineupCard />
       </DraggableBox>
 
       {/* 選手情報 — 左下 */}
-      <DraggableBox initialX={24} initialY={1080 - 60}>
+      <DraggableBox id="playerInfo">
         <PlayerInfo />
       </DraggableBox>
 
       {/* 経過ログ — 右下 */}
-      <DraggableBox initialX={1920 - 360} initialY={1080 - 280}>
+      <DraggableBox id="playLog">
         <PlayLog />
       </DraggableBox>
 
@@ -68,7 +161,7 @@ export default function OverlayPage() {
       <Ticker />
 
       {/* マスコット — 右下 */}
-      <DraggableBox initialX={1920 - 180} initialY={1080 - 180}>
+      <DraggableBox id="mascot">
         <Mascot />
       </DraggableBox>
 

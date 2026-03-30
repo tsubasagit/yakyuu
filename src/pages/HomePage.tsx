@@ -50,6 +50,36 @@ export default function HomePage() {
           </ul>
         </div>
 
+        {/* OBS セットアップガイド */}
+        <div className="mb-12">
+          <h2 className="text-xl font-bold mb-4 border-b border-slate-700 pb-2">OBS セットアップ</h2>
+          <div className="space-y-4 text-sm">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
+              <h3 className="font-bold text-yellow-400 mb-2">Step 1: オーバーレイを追加</h3>
+              <p className="text-slate-300 mb-2">OBSの「ソース」→「ブラウザ」で以下を設定：</p>
+              <ul className="text-slate-400 space-y-1 ml-4">
+                <li>- URL: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-xs text-slate-200">{window.location.origin + window.location.pathname}#/overlay</code></li>
+                <li>- 幅: <strong className="text-white">1920</strong>　高さ: <strong className="text-white">1080</strong></li>
+                <li>- 「表示されていないときにソースをシャットダウン」→ <strong className="text-red-400">OFF</strong></li>
+              </ul>
+            </div>
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
+              <h3 className="font-bold text-[#538bb0] mb-2">Step 2: コントロールパネルを追加</h3>
+              <p className="text-slate-300 mb-2">OBSメニュー「<strong className="text-white">ドック</strong>」→「<strong className="text-white">カスタムブラウザドック</strong>」で以下を設定：</p>
+              <ul className="text-slate-400 space-y-1 ml-4">
+                <li>- ドック名: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-xs text-slate-200">yakyuu コントロール</code></li>
+                <li>- URL: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-xs text-slate-200">{window.location.origin + window.location.pathname}#/control</code></li>
+              </ul>
+              <p className="text-yellow-400/80 text-xs mt-2">
+                ※ カスタムドックとブラウザソースはOBS内で同じブラウザエンジンを共有するため、リアルタイム同期が可能です
+              </p>
+            </div>
+            <p className="text-slate-500 text-xs">
+              ※ 通常のブラウザ（Chrome等）で開いたコントロールパネルはOBSブラウザソースと同期できません。必ずOBSのカスタムドックをご利用ください。
+            </p>
+          </div>
+        </div>
+
         {/* 技術スタック */}
         <div className="mb-12">
           <h2 className="text-xl font-bold mb-4 border-b border-slate-700 pb-2">技術スタック</h2>

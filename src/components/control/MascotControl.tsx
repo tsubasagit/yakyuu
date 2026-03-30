@@ -15,21 +15,33 @@ const UPLOAD_MODES: { mode: string; label: string }[] = [
   { mode: 'waiting', label: '考え中' },
 ]
 
+const MAX_DATA_URL_SIZE = 150_000 // 150KB
+
 function resizeImage(file: File, maxHeight: number): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     const url = URL.createObjectURL(file)
     img.onload = () => {
-      const scale = maxHeight / img.height
+      const scale = Math.min(1, maxHeight / img.height)
       const w = Math.round(img.width * scale)
-      const h = maxHeight
+      const h = Math.round(img.height * scale)
       const canvas = document.createElement('canvas')
       canvas.width = w
       canvas.height = h
       const ctx = canvas.getContext('2d')!
       ctx.drawImage(img, 0, 0, w, h)
       URL.revokeObjectURL(url)
-      resolve(canvas.toDataURL('image/png'))
+      // JPEG 0.7 で圧縮（PNG より大幅に軽量）
+      let dataUrl = canvas.toDataURL('image/jpeg', 0.7)
+      if (dataUrl.length > MAX_DATA_URL_SIZE) {
+        // それでも大きければ更に圧縮
+        dataUrl = canvas.toDataURL('image/jpeg', 0.4)
+      }
+      if (dataUrl.length > MAX_DATA_URL_SIZE) {
+        reject(new Error('画像が大きすぎます。より小さい画像をお使いください。'))
+        return
+      }
+      resolve(dataUrl)
     }
     img.onerror = () => {
       URL.revokeObjectURL(url)
@@ -60,8 +72,8 @@ export default function MascotControl() {
     try {
       const dataUrl = await resizeImage(file, 300)
       setMascotImage(uploadTargetRef.current, dataUrl)
-    } catch {
-      // ignore
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '画像の処理に失敗しました')
     }
     e.target.value = ''
   }
@@ -84,7 +96,7 @@ export default function MascotControl() {
 
       {showMascot && (
         <>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {MODES.map((m) => (
               <button
                 key={m.mode}

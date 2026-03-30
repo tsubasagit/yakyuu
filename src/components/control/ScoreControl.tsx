@@ -53,69 +53,69 @@ export default function ScoreControl() {
       <h2 className="text-white font-bold text-lg">得点・安打・失策</h2>
 
       {/* クイック操作ボタン — アウェイ */}
-      <div className="grid grid-cols-5 gap-2">
+      <div className="flex flex-wrap gap-1.5">
         <button
           onClick={() => subtractRun('away')}
-          className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-sm font-bold"
+          className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-xs font-bold"
         >
           {awayTeam.shortName} -1点
         </button>
         <button
           onClick={() => addRun('away')}
-          className="bg-accent hover:bg-accent/80 text-white px-2 py-2 rounded text-sm font-bold"
+          className="bg-accent hover:bg-accent/80 text-white px-2 py-2 rounded text-xs font-bold"
         >
           {awayTeam.shortName} +1点
         </button>
         <button
           onClick={() => addHit('away')}
-          className="bg-green-700 hover:bg-green-600 text-white px-2 py-2 rounded text-sm font-bold"
+          className="bg-green-700 hover:bg-green-600 text-white px-2 py-2 rounded text-xs font-bold"
         >
-          {awayTeam.shortName} +1H
+          +1H
         </button>
         <button
           onClick={() => addError('away')}
-          className="bg-red-700 hover:bg-red-600 text-white px-2 py-2 rounded text-sm font-bold"
+          className="bg-red-700 hover:bg-red-600 text-white px-2 py-2 rounded text-xs font-bold"
         >
-          {awayTeam.shortName} +1E
+          +1E
         </button>
         <button
           onClick={() => setErrors('away', Math.max(0, awayErrors - 1))}
-          className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-sm font-bold"
+          className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-xs font-bold"
         >
-          {awayTeam.shortName} -1E
+          -1E
         </button>
       </div>
       {/* クイック操作ボタン — ホーム */}
-      <div className="grid grid-cols-5 gap-2">
+      <div className="flex flex-wrap gap-1.5">
         <button
           onClick={() => subtractRun('home')}
-          className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-sm font-bold"
+          className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-xs font-bold"
         >
           {homeTeam.shortName} -1点
         </button>
         <button
           onClick={() => addRun('home')}
-          className="bg-accent hover:bg-accent/80 text-white px-2 py-2 rounded text-sm font-bold"
+          className="bg-accent hover:bg-accent/80 text-white px-2 py-2 rounded text-xs font-bold"
         >
           {homeTeam.shortName} +1点
         </button>
         <button
           onClick={() => addHit('home')}
-          className="bg-green-700 hover:bg-green-600 text-white px-2 py-2 rounded text-sm font-bold"
+          className="bg-green-700 hover:bg-green-600 text-white px-2 py-2 rounded text-xs font-bold"
         >
-          {homeTeam.shortName} +1H
+          +1H
         </button>
         <button
           onClick={() => addError('home')}
-          className="bg-red-700 hover:bg-red-600 text-white px-2 py-2 rounded text-sm font-bold"
+          className="bg-red-700 hover:bg-red-600 text-white px-2 py-2 rounded text-xs font-bold"
         >
-          {homeTeam.shortName} +1E
+          +1E
         </button>
         <button
           onClick={() => setErrors('home', Math.max(0, homeErrors - 1))}
-          className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-sm font-bold"
+          className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-xs font-bold"
         >
-          {homeTeam.shortName} -1E
+          -1E
         </button>
       </div>
 

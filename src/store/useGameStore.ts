@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { EffectType, GameState, HalfInning, LineupPlayer, MascotMode, PlayerInfo, Runners } from '../types'
-import { initialGameState, initialPlayerInfo, formatBatterStat } from '../types'
+import type { EffectType, GameState, HalfInning, LineupPlayer, MascotMode, OverlayPosition, PlayerInfo, Runners } from '../types'
+import { initialGameState, initialPlayerInfo, formatBatterStat, DEFAULT_OVERLAY_POSITIONS } from '../types'
 import { broadcastState } from '../lib/sync'
 
 const DATA_KEYS: (keyof GameState)[] = [
@@ -12,6 +12,7 @@ const DATA_KEYS: (keyof GameState)[] = [
   'awayBatterIndex', 'homeBatterIndex', 'playLog',
   'pitchCount', 'gameStartTime', 'ticker', 'activeEffect', 'effectTimestamp',
   'showMascot', 'mascotMode', 'mascotImages', 'autoChangeEffect', 'showWaitingScreen',
+  'overlayPositions',
 ]
 
 function extractGameState(store: GameState): GameState {
@@ -72,6 +73,8 @@ interface GameActions {
   setMascotImage: (mode: string, dataUrl: string | null) => void
   setAutoChangeEffect: (on: boolean) => void
   setShowWaitingScreen: (show: boolean) => void
+  setOverlayPosition: (id: string, pos: OverlayPosition) => void
+  resetOverlayPositions: () => void
 }
 
 type GameStore = GameState & GameActions
@@ -303,11 +306,14 @@ export const useGameStore = create<GameStore>()(
       setTicker: (text) => set({ ticker: text }),
 
       triggerEffect: (type) => {
-        set({ activeEffect: type, effectTimestamp: Date.now() })
         if (type) {
+          set({ activeEffect: type, effectTimestamp: Date.now() })
+          // コントロール側のボタン disabled 解除用タイマー
           setTimeout(() => {
             set({ activeEffect: null, effectTimestamp: 0 })
           }, 6000)
+        } else {
+          set({ activeEffect: null, effectTimestamp: 0 })
         }
       },
 
@@ -355,9 +361,32 @@ export const useGameStore = create<GameStore>()(
       setAutoChangeEffect: (on) => set({ autoChangeEffect: on }),
 
       setShowWaitingScreen: (show) => set({ showWaitingScreen: show }),
+
+      setOverlayPosition: (id, pos) =>
+        set((s) => ({
+          overlayPositions: { ...s.overlayPositions, [id]: pos },
+        })),
+
+      resetOverlayPositions: () =>
+        set({ overlayPositions: { ...DEFAULT_OVERLAY_POSITIONS } }),
     }),
     {
       name: 'yakyuu-game-state',
+      storage: {
+        getItem: (name) => {
+          const raw = localStorage.getItem(name)
+          return raw ? JSON.parse(raw) : null
+        },
+        setItem: (name, value) => {
+          try {
+            localStorage.setItem(name, JSON.stringify(value))
+          } catch {
+            // QuotaExceededError: 容量超過時は書き込みをスキップ
+            console.warn('localStorage quota exceeded — state not persisted')
+          }
+        },
+        removeItem: (name) => localStorage.removeItem(name),
+      },
       merge: (persisted, current) => ({
         ...current,
         ...(persisted as Partial<GameStore>),
@@ -424,6 +453,10 @@ function advanceInningPatch(s: GameState): Partial<GameState> {
   if (s.autoChangeEffect) {
     resetState.activeEffect = 'change'
     resetState.effectTimestamp = Date.now()
+    // コントロール側のボタン disabled 解除用タイマー
+    setTimeout(() => {
+      useGameStore.setState({ activeEffect: null, effectTimestamp: 0 })
+    }, 6000)
   }
 
   if (s.currentHalf === 'top') {

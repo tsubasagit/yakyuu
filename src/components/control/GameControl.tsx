@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
+import { initialGameState } from '../../types'
 
 export default function GameControl() {
   const awayTeam = useGameStore((s) => s.awayTeam)
@@ -14,6 +15,7 @@ export default function GameControl() {
   const setTeamColor = useGameStore((s) => s.setTeamColor)
   const showWaitingScreen = useGameStore((s) => s.showWaitingScreen)
   const setShowWaitingScreen = useGameStore((s) => s.setShowWaitingScreen)
+  const resetOverlayPositions = useGameStore((s) => s.resetOverlayPositions)
 
   const [awayName, setAwayName] = useState(awayTeam.name)
   const [awayShort, setAwayShort] = useState(awayTeam.shortName)
@@ -32,10 +34,13 @@ export default function GameControl() {
   const handleNewGame = () => {
     if (confirm('新しい試合を開始しますか？全データがリセットされます。')) {
       newGame()
-      setAwayName('アウェイ')
-      setAwayShort('AW')
-      setHomeName('ホーム')
-      setHomeShort('HM')
+      const { awayTeam: a, homeTeam: h } = initialGameState
+      setAwayName(a.name)
+      setAwayShort(a.shortName)
+      setAwayColor(a.color)
+      setHomeName(h.name)
+      setHomeShort(h.shortName)
+      setHomeColor(h.color)
     }
   }
 
@@ -162,6 +167,17 @@ export default function GameControl() {
         {gameStartTime && (
           <span className="text-green-400 text-xs animate-pulse">計測中</span>
         )}
+      </div>
+
+      {/* オーバーレイ位置リセット */}
+      <div className="flex items-center gap-3 pt-2 border-t border-gray-700">
+        <span className="text-gray-400 text-sm">パネル配置</span>
+        <button
+          onClick={resetOverlayPositions}
+          className="bg-gray-600 hover:bg-gray-500 text-gray-300 px-3 py-1.5 rounded text-xs font-bold"
+        >
+          位置をリセット
+        </button>
       </div>
 
       {isGameOver && (

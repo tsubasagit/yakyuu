@@ -1,4 +1,8 @@
+import { useEffect } from 'react'
 import { useGameStore } from '../../store/useGameStore'
+
+const EFFECT_DURATION = 6000
+const EFFECT_STALE_MS = 7000
 
 const EFFECT_CONFIG: Record<string, { label: string; color: string; emoji: string }> = {
   homerun: { label: 'HOME RUN!', color: 'text-yellow-400', emoji: '💥' },
@@ -47,7 +51,18 @@ export default function EffectOverlay() {
   const activeEffect = useGameStore((s) => s.activeEffect)
   const effectTimestamp = useGameStore((s) => s.effectTimestamp)
 
-  if (!activeEffect) return null
+  // オーバーレイ側でも自動クリア（OBS CEF ではコントロール側の setTimeout が届かないため）
+  useEffect(() => {
+    if (!activeEffect) return
+    const timer = setTimeout(() => {
+      useGameStore.getState().triggerEffect(null)
+    }, EFFECT_DURATION)
+    return () => clearTimeout(timer)
+  }, [activeEffect, effectTimestamp])
+
+  // 古いエフェクト（7秒以上前）は表示しない（リロード時のゴースト防止）
+  const isFresh = effectTimestamp > 0 && (Date.now() - effectTimestamp < EFFECT_STALE_MS)
+  if (!activeEffect || !isFresh) return null
 
   if (activeEffect === 'change') {
     return <ChangeOverlay timestamp={effectTimestamp} />

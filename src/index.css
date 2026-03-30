@@ -2,11 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* OBS ブラウザソース用: 透明背景 */
+/* OBS ブラウザソース用: 透明背景 + はみ出し防止 */
 html, body, #root {
   background: transparent;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 /* オーバーレイ用フォント */

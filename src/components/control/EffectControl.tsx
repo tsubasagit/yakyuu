@@ -29,13 +29,13 @@ export default function EffectControl() {
 
       <div className="space-y-1">
         <span className="text-gray-400 text-xs">打撃結果</span>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {BATTING_EFFECTS.map((e) => (
             <button
               key={e.type}
               onClick={() => triggerEffect(e.type)}
               disabled={!!activeEffect}
-              className={`${e.color} text-white px-3 py-2 rounded text-sm font-bold disabled:opacity-50`}
+              className={`${e.color} text-white px-2 py-2 rounded text-xs sm:text-sm font-bold disabled:opacity-50`}
             >
               {e.label}
             </button>

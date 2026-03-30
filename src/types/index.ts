@@ -60,6 +60,11 @@ export interface Team {
   color: string
 }
 
+export interface OverlayPosition {
+  x: number
+  y: number
+}
+
 export interface GameState {
   awayTeam: Team
   homeTeam: Team
@@ -92,6 +97,7 @@ export interface GameState {
   mascotImages: Record<string, string>
   autoChangeEffect: boolean
   showWaitingScreen: boolean
+  overlayPositions: Record<string, OverlayPosition>
 }
 
 export const initialPlayerInfo: PlayerInfo = {
@@ -148,6 +154,15 @@ export const HAWKS_LINEUP: LineupPlayer[] = [
   { order: 10, name: '東浜 巨', number: '11', position: '投', appearances: '18', record: '10勝3敗' },
 ]
 
+export const DEFAULT_OVERLAY_POSITIONS: Record<string, OverlayPosition> = {
+  scoreboard: { x: 24, y: 24 },
+  timer: { x: 24, y: 160 },
+  lineup: { x: 1420, y: 24 },
+  playerInfo: { x: 24, y: 1020 },
+  playLog: { x: 1560, y: 800 },
+  mascot: { x: 1740, y: 900 },
+}
+
 export const initialGameState: GameState = {
   awayTeam: { name: 'オリックス', shortName: 'Bs', color: '#002D6E' },
   homeTeam: { name: 'ソフトバンク', shortName: 'SB', color: '#F5A800' },
@@ -180,6 +195,7 @@ export const initialGameState: GameState = {
   mascotImages: {},
   autoChangeEffect: true,
   showWaitingScreen: false,
+  overlayPositions: { ...DEFAULT_OVERLAY_POSITIONS },
 }
 
 export { emptyLineup }
