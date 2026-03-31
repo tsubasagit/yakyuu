@@ -2,11 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-/* OBS ブラウザソース用: 透明背景 + はみ出し防止 */
+/* 基本リセット */
 html, body, #root {
   background: transparent;
   margin: 0;
   padding: 0;
+}
+
+/* OBS オーバーレイ用: はみ出し防止（OverlayPage でのみ適用） */
+.overlay-no-scroll,
+.overlay-no-scroll body,
+.overlay-no-scroll #root {
   overflow: hidden;
 }
 

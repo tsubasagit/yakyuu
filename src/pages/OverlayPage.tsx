@@ -125,6 +125,12 @@ export default function OverlayPage() {
   useOverlayHeartbeat()
   const scale = useViewportScale()
 
+  // オーバーレイページでのみスクロールを無効化
+  useEffect(() => {
+    document.documentElement.classList.add('overlay-no-scroll')
+    return () => document.documentElement.classList.remove('overlay-no-scroll')
+  }, [])
+
   return (
     <div
       style={{
