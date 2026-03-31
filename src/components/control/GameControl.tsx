@@ -16,6 +16,8 @@ export default function GameControl() {
   const showWaitingScreen = useGameStore((s) => s.showWaitingScreen)
   const setShowWaitingScreen = useGameStore((s) => s.setShowWaitingScreen)
   const resetOverlayPositions = useGameStore((s) => s.resetOverlayPositions)
+  const overlayScale = useGameStore((s) => s.overlayScale ?? 1)
+  const setOverlayScale = useGameStore((s) => s.setOverlayScale)
 
   const [awayName, setAwayName] = useState(awayTeam.name)
   const [awayShort, setAwayShort] = useState(awayTeam.shortName)
@@ -169,15 +171,38 @@ export default function GameControl() {
         )}
       </div>
 
-      {/* オーバーレイ位置リセット */}
-      <div className="flex items-center gap-3 pt-2 border-t border-gray-700">
-        <span className="text-gray-400 text-sm">パネル配置</span>
-        <button
-          onClick={resetOverlayPositions}
-          className="bg-gray-600 hover:bg-gray-500 text-gray-300 px-3 py-1.5 rounded text-xs font-bold"
-        >
-          位置をリセット
-        </button>
+      {/* オーバーレイ パネルサイズ・位置 */}
+      <div className="space-y-2 pt-2 border-t border-gray-700">
+        <div className="flex items-center gap-3">
+          <span className="text-gray-400 text-sm whitespace-nowrap">パネルサイズ</span>
+          <input
+            type="range"
+            min="0.5"
+            max="3"
+            step="0.1"
+            value={overlayScale}
+            onChange={(e) => setOverlayScale(parseFloat(e.target.value))}
+            className="flex-1 accent-accent"
+          />
+          <span className="text-white text-sm font-mono w-12 text-right">
+            {overlayScale.toFixed(1)}x
+          </span>
+          <button
+            onClick={() => setOverlayScale(1)}
+            className="bg-gray-600 hover:bg-gray-500 text-gray-300 px-2 py-1 rounded text-xs"
+          >
+            1x
+          </button>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-gray-400 text-sm">パネル配置</span>
+          <button
+            onClick={resetOverlayPositions}
+            className="bg-gray-600 hover:bg-gray-500 text-gray-300 px-3 py-1.5 rounded text-xs font-bold"
+          >
+            位置をリセット
+          </button>
+        </div>
       </div>
 
       {isGameOver && (

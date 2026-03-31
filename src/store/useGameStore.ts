@@ -4,6 +4,16 @@ import type { EffectType, GameState, HalfInning, LineupPlayer, MascotMode, Overl
 import { initialGameState, initialPlayerInfo, formatBatterStat, DEFAULT_OVERLAY_POSITIONS } from '../types'
 import { broadcastState } from '../lib/sync'
 
+/**
+ * オーバーレイページでは localStorage への書き込みを禁止する。
+ * コントロールパネルだけが writer、オーバーレイは reader に徹することで
+ * 書き込み競合（チーム名が反映されない・選手データが初期化される等）を防止する。
+ */
+let _preventPersistWrites = false
+export function setPreventPersistWrites(prevent: boolean) {
+  _preventPersistWrites = prevent
+}
+
 const DATA_KEYS: (keyof GameState)[] = [
   'awayTeam', 'homeTeam', 'currentInning', 'currentHalf', 'isGameOver',
   'innings', 'awayTotal', 'homeTotal', 'awayHits', 'homeHits',
@@ -12,7 +22,7 @@ const DATA_KEYS: (keyof GameState)[] = [
   'awayBatterIndex', 'homeBatterIndex', 'playLog',
   'pitchCount', 'gameStartTime', 'ticker', 'activeEffect', 'effectTimestamp',
   'showMascot', 'mascotMode', 'mascotImages', 'autoChangeEffect', 'showWaitingScreen',
-  'overlayPositions',
+  'overlayPositions', 'overlayScale',
 ]
 
 function extractGameState(store: GameState): GameState {
@@ -75,6 +85,7 @@ interface GameActions {
   setShowWaitingScreen: (show: boolean) => void
   setOverlayPosition: (id: string, pos: OverlayPosition) => void
   resetOverlayPositions: () => void
+  setOverlayScale: (scale: number) => void
 }
 
 type GameStore = GameState & GameActions
@@ -369,15 +380,26 @@ export const useGameStore = create<GameStore>()(
 
       resetOverlayPositions: () =>
         set({ overlayPositions: { ...DEFAULT_OVERLAY_POSITIONS } }),
+
+      setOverlayScale: (scale) =>
+        set({ overlayScale: Math.max(0.5, Math.min(3, scale)) }),
     }),
     {
       name: 'yakyuu-game-state',
       storage: {
         getItem: (name) => {
-          const raw = localStorage.getItem(name)
-          return raw ? JSON.parse(raw) : null
+          try {
+            const raw = localStorage.getItem(name)
+            return raw ? JSON.parse(raw) : null
+          } catch {
+            // JSON 破損時はデータを削除して初期状態で起動（白画面防止）
+            console.warn('Failed to parse localStorage — starting fresh')
+            try { localStorage.removeItem(name) } catch { /* ignore */ }
+            return null
+          }
         },
         setItem: (name, value) => {
+          if (_preventPersistWrites) return  // オーバーレイは書き込み禁止
           try {
             localStorage.setItem(name, JSON.stringify(value))
           } catch {
@@ -385,7 +407,10 @@ export const useGameStore = create<GameStore>()(
             console.warn('localStorage quota exceeded — state not persisted')
           }
         },
-        removeItem: (name) => localStorage.removeItem(name),
+        removeItem: (name) => {
+          if (_preventPersistWrites) return
+          localStorage.removeItem(name)
+        },
       },
       merge: (persisted, current) => ({
         ...current,

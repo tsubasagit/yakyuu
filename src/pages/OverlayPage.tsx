@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBroadcastSync } from '../hooks/useBroadcastSync'
 import { useStorageSync } from '../hooks/useStorageSync'
-import { useGameStore } from '../store/useGameStore'
+import { useGameStore, setPreventPersistWrites } from '../store/useGameStore'
 import Scoreboard from '../components/overlay/Scoreboard'
 import PlayerInfo from '../components/overlay/PlayerInfo'
 import PlayLog from '../components/overlay/PlayLog'
@@ -36,9 +36,11 @@ function useViewportScale() {
 function DraggableBox({
   id,
   children,
+  scale: panelScale = 1,
 }: {
   id: string
   children: React.ReactNode
+  scale?: number
 }) {
   // プリミティブ値でセレクトし、オブジェクト参照変更による不要な再レンダリングを防止
   const storeX = useGameStore((s) => s.overlayPositions?.[id]?.x ?? 0)
@@ -93,7 +95,12 @@ function DraggableBox({
   return (
     <div
       className="absolute pointer-events-auto drag-handle"
-      style={{ left: localPos.x, top: localPos.y }}
+      style={{
+        left: localPos.x,
+        top: localPos.y,
+        transform: panelScale !== 1 ? `scale(${panelScale})` : undefined,
+        transformOrigin: 'top left',
+      }}
       onMouseDown={onMouseDown}
     >
       {children}
@@ -120,10 +127,18 @@ function useOverlayHeartbeat() {
 }
 
 export default function OverlayPage() {
+  // オーバーレイは localStorage への書き込みを禁止（読み取り専用）
+  // コントロールとの書き込み競合を防止する
+  useEffect(() => {
+    setPreventPersistWrites(true)
+    return () => setPreventPersistWrites(false)
+  }, [])
+
   useBroadcastSync()
   useStorageSync()
   useOverlayHeartbeat()
   const scale = useViewportScale()
+  const overlayScale = useGameStore((s) => s.overlayScale ?? 1)
 
   // オーバーレイページでのみスクロールを無効化
   useEffect(() => {
@@ -142,27 +157,27 @@ export default function OverlayPage() {
       className="relative select-none pointer-events-none"
     >
       {/* スコアボード（BSO・走者・球数 統合） — 左上 */}
-      <DraggableBox id="scoreboard">
+      <DraggableBox id="scoreboard" scale={overlayScale}>
         <Scoreboard />
       </DraggableBox>
 
       {/* 経過時間 */}
-      <DraggableBox id="timer">
+      <DraggableBox id="timer" scale={overlayScale}>
         <GameTimer />
       </DraggableBox>
 
       {/* 両チーム打順 — 右上 */}
-      <DraggableBox id="lineup">
+      <DraggableBox id="lineup" scale={overlayScale}>
         <LineupCard />
       </DraggableBox>
 
       {/* 選手情報 — 左下 */}
-      <DraggableBox id="playerInfo">
+      <DraggableBox id="playerInfo" scale={overlayScale}>
         <PlayerInfo />
       </DraggableBox>
 
       {/* 経過ログ — 右下 */}
-      <DraggableBox id="playLog">
+      <DraggableBox id="playLog" scale={overlayScale}>
         <PlayLog />
       </DraggableBox>
 

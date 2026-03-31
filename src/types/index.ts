@@ -98,6 +98,7 @@ export interface GameState {
   autoChangeEffect: boolean
   showWaitingScreen: boolean
   overlayPositions: Record<string, OverlayPosition>
+  overlayScale: number
 }
 
 export const initialPlayerInfo: PlayerInfo = {
@@ -196,6 +197,7 @@ export const initialGameState: GameState = {
   autoChangeEffect: true,
   showWaitingScreen: false,
   overlayPositions: { ...DEFAULT_OVERLAY_POSITIONS },
+  overlayScale: 1,
 }
 
 export { emptyLineup }
