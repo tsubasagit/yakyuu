@@ -1,7 +1,5 @@
-import { useEffect } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 
-const EFFECT_DURATION = 6000
 const EFFECT_STALE_MS = 7000
 
 const EFFECT_CONFIG: Record<string, { label: string; color: string; emoji: string }> = {
@@ -51,14 +49,8 @@ export default function EffectOverlay() {
   const activeEffect = useGameStore((s) => s.activeEffect)
   const effectTimestamp = useGameStore((s) => s.effectTimestamp)
 
-  // オーバーレイ側でも自動クリア（OBS CEF ではコントロール側の setTimeout が届かないため）
-  useEffect(() => {
-    if (!activeEffect) return
-    const timer = setTimeout(() => {
-      useGameStore.getState().triggerEffect(null)
-    }, EFFECT_DURATION)
-    return () => clearTimeout(timer)
-  }, [activeEffect, effectTimestamp])
+  // エフェクトのクリアはコントロール側の setTimeout → localStorage → ポーリング で反映される。
+  // オーバーレイ側で独自にクリアすると、ポーリングで再読み込みした際にゴースト再表示のリスクがあるため削除。
 
   // 古いエフェクト（7秒以上前）は表示しない（リロード時のゴースト防止）
   const isFresh = effectTimestamp > 0 && (Date.now() - effectTimestamp < EFFECT_STALE_MS)

@@ -10,10 +10,15 @@ const POLL_INTERVAL = 500
  *  - storage イベント: 同一ブラウザの別タブからの変更を即時検知
  *  - ポーリング: OBS の CEF 内（Custom Dock + Browser Source）等で storage イベントが
  *    発火しないケースに対応
+ *
+ * 注意: オーバーレイ側は _preventPersistWrites=true のため localStorage に書き戻さない。
+ * overlayPositions はオーバーレイ側のドラッグで変更されるため、コントロール側の変更のみ反映する。
  */
 export function useStorageSync(): void {
   const replaceState = useGameStore((s) => s.replaceState)
   const lastRawRef = useRef<string>('')
+  // コントロール側の overlayPositions が変わったかを追跡
+  const prevPositionsRef = useRef<string>('')
 
   useEffect(() => {
     function applyStoredState() {
@@ -25,11 +30,17 @@ export function useStorageSync(): void {
         const parsed = JSON.parse(raw)
         const state = parsed.state
         if (state) {
+          // overlayPositions: コントロール側で変更があった場合のみ反映する。
+          // オーバーレイは _preventPersistWrites=true で localStorage に書けないため、
+          // ドラッグ後のポーリングで古い位置に戻るのを防ぐ。
+          const newPosStr = JSON.stringify(state.overlayPositions ?? {})
+          if (prevPositionsRef.current && newPosStr === prevPositionsRef.current) {
+            // コントロール側からの変更なし → オーバーレイの現在位置を維持
+            state.overlayPositions = useGameStore.getState().overlayPositions
+          }
+          prevPositionsRef.current = newPosStr
+
           replaceState(state)
-          // replaceState → Zustand persist が localStorage に書き戻すため、
-          // その値で lastRawRef を更新してフィードバックループを防止
-          const written = localStorage.getItem(STORAGE_KEY)
-          if (written) lastRawRef.current = written
         }
       } catch {
         // ignore parse errors
