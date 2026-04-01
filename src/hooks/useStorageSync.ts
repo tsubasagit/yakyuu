@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useGameStore } from '../store/useGameStore'
+import { cacheOverlayState } from '../lib/overlayCache'
 
 const STORAGE_KEY = 'yakyuu-game-state'
 const POLL_INTERVAL = 500
@@ -41,6 +42,8 @@ export function useStorageSync(): void {
           prevPositionsRef.current = newPosStr
 
           replaceState(state)
+          // localStorage 経由で受信したデータもキャッシュに保存
+          cacheOverlayState(state)
         }
       } catch {
         // ignore parse errors

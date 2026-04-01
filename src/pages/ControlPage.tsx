@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import SyncStatus from '../components/control/SyncStatus'
 import GameControl from '../components/control/GameControl'
 import InningControl from '../components/control/InningControl'
@@ -10,8 +11,17 @@ import LineupControl from '../components/control/LineupControl'
 import TickerControl from '../components/control/TickerControl'
 import EffectControl from '../components/control/EffectControl'
 import MascotControl from '../components/control/MascotControl'
+import { useGameStore, extractGameState } from '../store/useGameStore'
+import { broadcastState, onStateRequest } from '../lib/sync'
 
 export default function ControlPage() {
+  // オーバーレイの起動時リクエストに現在のステートで応答する
+  useEffect(() => {
+    return onStateRequest(() => {
+      broadcastState(extractGameState(useGameStore.getState()))
+    })
+  }, [])
+
   return (
     <div className="min-h-screen bg-gray-900 p-2 sm:p-4">
       <div className="max-w-5xl mx-auto space-y-3 sm:space-y-4">
