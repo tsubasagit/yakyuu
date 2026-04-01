@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import type { LineupPlayer, Position } from '../../types'
 import { ORIX_LINEUP, HAWKS_LINEUP } from '../../types'
+import { parseLineupCsv } from '../../lib/csvImport'
 
 const POSITIONS: Position[] = ['投', '捕', '一', '二', '三', '遊', '左', '中', '右', 'DH']
 
@@ -128,6 +129,8 @@ function PitcherRow({
 
 export default function LineupControl() {
   const [activeTeam, setActiveTeam] = useState<'away' | 'home'>('away')
+  const [csvError, setCsvError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const awayTeam = useGameStore((s) => s.awayTeam)
   const homeTeam = useGameStore((s) => s.homeTeam)
   const awayLineup = useGameStore((s) => s.awayLineup)
@@ -144,6 +147,25 @@ export default function LineupControl() {
   const batterIdx = activeTeam === 'away' ? awayBatterIndex : homeBatterIndex
   const isAttacking = (activeTeam === 'away' && currentHalf === 'top') ||
     (activeTeam === 'home' && currentHalf === 'bottom')
+
+  const handleCsvImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCsvError(null)
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        const players = parseLineupCsv(reader.result as string)
+        setLineup(activeTeam, players)
+        setCsvError(null)
+      } catch (err) {
+        setCsvError(err instanceof Error ? err.message : 'CSV読み込みに失敗しました')
+      }
+    }
+    reader.readAsText(file)
+    // 同じファイルを再選択できるようにリセット
+    e.target.value = ''
+  }
 
   return (
     <div className="bg-gray-800 rounded-lg p-4 space-y-3">
@@ -184,20 +206,66 @@ export default function LineupControl() {
         )}
       </div>
 
-      {/* プリセット */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setLineup('away', [...ORIX_LINEUP])}
-          className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded text-xs"
-        >
-          オリックス読込
-        </button>
-        <button
-          onClick={() => setLineup('home', [...HAWKS_LINEUP])}
-          className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded text-xs"
-        >
-          ソフトバンク読込
-        </button>
+      {/* CSV インポート / プリセット */}
+      <div className="space-y-2">
+        <div className="flex flex-wrap gap-2 items-center">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={handleCsvImport}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs font-bold"
+          >
+            CSV読込
+          </button>
+          <a
+            href="./samples/template.csv"
+            download="template.csv"
+            className="text-blue-400 hover:text-blue-300 text-xs underline"
+          >
+            テンプレート
+          </a>
+          <span className="text-gray-600 text-xs">|</span>
+          <span className="text-gray-500 text-xs">サンプル:</span>
+          <a
+            href="./samples/orix.csv"
+            download="orix.csv"
+            className="text-gray-400 hover:text-gray-300 text-xs underline"
+          >
+            オリックス
+          </a>
+          <a
+            href="./samples/softbank.csv"
+            download="softbank.csv"
+            className="text-gray-400 hover:text-gray-300 text-xs underline"
+          >
+            ソフトバンク
+          </a>
+        </div>
+        {/* プリセット（従来互換） */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setLineup('away', [...ORIX_LINEUP])}
+            className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded text-xs"
+          >
+            オリックス読込
+          </button>
+          <button
+            onClick={() => setLineup('home', [...HAWKS_LINEUP])}
+            className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded text-xs"
+          >
+            ソフトバンク読込
+          </button>
+        </div>
+        {csvError && (
+          <div className="bg-red-900/50 border border-red-500 rounded px-3 py-1.5 text-red-300 text-xs">
+            {csvError}
+          </div>
+        )}
       </div>
 
       {/* ラインナップ（1-9番打者） */}
