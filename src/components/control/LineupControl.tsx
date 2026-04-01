@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import type { LineupPlayer, Position } from '../../types'
-import { ORIX_LINEUP, HAWKS_LINEUP } from '../../types'
+import { CARP_LINEUP } from '../../types'
 import { parseLineupCsv } from '../../lib/csvImport'
 
 const POSITIONS: Position[] = ['投', '捕', '一', '二', '三', '遊', '左', '中', '右', 'DH']
@@ -232,33 +232,20 @@ export default function LineupControl() {
           <span className="text-gray-600 text-xs">|</span>
           <span className="text-gray-500 text-xs">サンプル:</span>
           <a
-            href="./samples/orix.csv"
-            download="orix.csv"
+            href="./samples/carp.csv"
+            download="carp.csv"
             className="text-gray-400 hover:text-gray-300 text-xs underline"
           >
-            オリックス
-          </a>
-          <a
-            href="./samples/softbank.csv"
-            download="softbank.csv"
-            className="text-gray-400 hover:text-gray-300 text-xs underline"
-          >
-            ソフトバンク
+            広島カープ
           </a>
         </div>
-        {/* プリセット（従来互換） */}
+        {/* プリセット */}
         <div className="flex gap-2">
           <button
-            onClick={() => setLineup('away', [...ORIX_LINEUP])}
+            onClick={() => setLineup(activeTeam, [...CARP_LINEUP])}
             className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded text-xs"
           >
-            オリックス読込
-          </button>
-          <button
-            onClick={() => setLineup('home', [...HAWKS_LINEUP])}
-            className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded text-xs"
-          >
-            ソフトバンク読込
+            広島カープ読込
           </button>
         </div>
         {csvError && (
