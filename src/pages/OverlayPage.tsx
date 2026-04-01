@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBroadcastSync } from '../hooks/useBroadcastSync'
 import { useStorageSync } from '../hooks/useStorageSync'
 import { useGameStore, setPreventPersistWrites } from '../store/useGameStore'
+import { requestState } from '../lib/sync'
+import { loadOverlayCache } from '../lib/overlayCache'
 import Scoreboard from '../components/overlay/Scoreboard'
 import PlayerInfo from '../components/overlay/PlayerInfo'
 import PlayLog from '../components/overlay/PlayLog'
@@ -137,6 +139,17 @@ export default function OverlayPage() {
   useBroadcastSync()
   useStorageSync()
   useOverlayHeartbeat()
+
+  // マウント時: キャッシュから復元 → コントロールパネルに最新ステートを要求
+  // OBS 再起動時にデフォルト値（オリックスVSソフトバンク）に戻るのを防ぐ
+  useEffect(() => {
+    const cached = loadOverlayCache()
+    if (cached) {
+      useGameStore.getState().replaceState(cached)
+    }
+    // コントロールパネルが開いていれば最新ステートを受信できる
+    requestState()
+  }, [])
   const scale = useViewportScale()
   const overlayScale = useGameStore((s) => s.overlayScale ?? 1)
 

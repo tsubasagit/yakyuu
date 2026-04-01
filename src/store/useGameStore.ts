@@ -25,7 +25,7 @@ const DATA_KEYS: (keyof GameState)[] = [
   'overlayPositions', 'overlayScale',
 ]
 
-function extractGameState(store: GameState): GameState {
+export function extractGameState(store: GameState): GameState {
   return Object.fromEntries(
     DATA_KEYS.map((key) => [key, store[key]]),
   ) as unknown as GameState
