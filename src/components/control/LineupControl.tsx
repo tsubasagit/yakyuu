@@ -214,13 +214,13 @@ function TeamLineupPanel({ side }: { side: 'away' | 'home' }) {
           onClick={() => setLineup(side, [...CARP_LINEUP])}
           className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded text-xs"
         >
-          広島カープ
+          サンプル：広島カープ
         </button>
         <button
           onClick={() => setLineup(side, [...HAWKS_LINEUP])}
           className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded text-xs"
         >
-          ソフトバンク
+          サンプル：ソフトバンク
         </button>
       </div>
       {csvError && (
