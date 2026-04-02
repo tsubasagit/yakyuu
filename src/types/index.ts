@@ -153,8 +153,8 @@ export const DEFAULT_OVERLAY_POSITIONS: Record<string, OverlayPosition> = {
 }
 
 export const initialGameState: GameState = {
-  awayTeam: { name: '広島カープ', shortName: 'C', color: '#ED1A3D' },
-  homeTeam: { name: '広島カープ', shortName: 'C', color: '#ED1A3D' },
+  awayTeam: { name: '楽天', shortName: '楽天', color: '#860012' },
+  homeTeam: { name: 'ソフトバンク', shortName: 'ソフトバンク', color: '#F5C51C' },
   currentInning: 1,
   currentHalf: 'top',
   isGameOver: false,

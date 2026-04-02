@@ -192,7 +192,7 @@ export default function LineupControl() {
               : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
           }`}
         >
-          {awayTeam.shortName}（先攻）
+          {awayTeam.name}（先攻）
         </button>
         <button
           onClick={() => setActiveTeam('home')}
@@ -202,7 +202,7 @@ export default function LineupControl() {
               : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
           }`}
         >
-          {homeTeam.shortName}（後攻）
+          {homeTeam.name}（後攻）
         </button>
         {isAttacking && (
           <span className="text-yellow-400 text-xs flex items-center ml-2">攻撃中</span>

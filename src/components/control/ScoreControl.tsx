@@ -38,7 +38,7 @@ export default function ScoreControl() {
       ? (team === 'away' ? awayHits : homeHits)
       : (team === 'away' ? awayErrors : homeErrors)
     const label = stat === 'hits' ? 'ヒット数' : 'エラー数'
-    const teamLabel = team === 'away' ? awayTeam.shortName : homeTeam.shortName
+    const teamLabel = team === 'away' ? awayTeam.name : homeTeam.name
     const input = prompt(`${teamLabel} ${label}:`, String(current))
     if (input === null) return
     const val = parseInt(input, 10)
@@ -58,13 +58,13 @@ export default function ScoreControl() {
           onClick={() => subtractRun('away')}
           className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-xs font-bold"
         >
-          {awayTeam.shortName} -1点
+          {awayTeam.name} -1点
         </button>
         <button
           onClick={() => addRun('away')}
           className="bg-accent hover:bg-accent/80 text-white px-2 py-2 rounded text-xs font-bold"
         >
-          {awayTeam.shortName} +1点
+          {awayTeam.name} +1点
         </button>
         <button
           onClick={() => addHit('away')}
@@ -91,13 +91,13 @@ export default function ScoreControl() {
           onClick={() => subtractRun('home')}
           className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-2 rounded text-xs font-bold"
         >
-          {homeTeam.shortName} -1点
+          {homeTeam.name} -1点
         </button>
         <button
           onClick={() => addRun('home')}
           className="bg-accent hover:bg-accent/80 text-white px-2 py-2 rounded text-xs font-bold"
         >
-          {homeTeam.shortName} +1点
+          {homeTeam.name} +1点
         </button>
         <button
           onClick={() => addHit('home')}
@@ -144,7 +144,7 @@ export default function ScoreControl() {
           </thead>
           <tbody>
             <tr>
-              <td className="px-2 py-1 font-bold">{awayTeam.shortName}</td>
+              <td className="px-2 py-1 font-bold">{awayTeam.name}</td>
               {innings.map((inn) => (
                 <td
                   key={inn.inning}
@@ -175,7 +175,7 @@ export default function ScoreControl() {
               </td>
             </tr>
             <tr>
-              <td className="px-2 py-1 font-bold">{homeTeam.shortName}</td>
+              <td className="px-2 py-1 font-bold">{homeTeam.name}</td>
               {innings.map((inn) => (
                 <td
                   key={inn.inning}

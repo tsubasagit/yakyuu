@@ -44,9 +44,9 @@ export default function Scoreboard() {
                   {inn.inning}
                 </th>
               ))}
-              <th className="px-2 py-1 text-center text-xs text-gray-400 border-l border-gray-600 min-w-[28px]">R</th>
-              <th className="px-2 py-1 text-center text-xs text-gray-400 min-w-[28px]">H</th>
-              <th className="px-2 py-1 text-center text-xs text-gray-400 min-w-[28px]">E</th>
+              <th className="px-2 py-1 text-center text-xs text-gray-400 border-l border-gray-600 min-w-[28px]">得点</th>
+              <th className="px-2 py-1 text-center text-xs text-gray-400 min-w-[28px]">安打</th>
+              <th className="px-2 py-1 text-center text-xs text-gray-400 min-w-[28px]">失策</th>
             </tr>
           </thead>
           <tbody>
@@ -62,7 +62,7 @@ export default function Scoreboard() {
                     {currentHalf === 'top' && (
                       <span className="text-[8px] text-yellow-400">▶</span>
                     )}
-                    <span className="text-white font-bold text-sm">{awayTeam.shortName}</span>
+                    <span className="text-white font-bold text-sm">{awayTeam.name}</span>
                   </div>
                 </div>
               </td>
@@ -103,7 +103,7 @@ export default function Scoreboard() {
                     {currentHalf === 'bottom' && (
                       <span className="text-[8px] text-yellow-400">▶</span>
                     )}
-                    <span className="text-white font-bold text-sm">{homeTeam.shortName}</span>
+                    <span className="text-white font-bold text-sm">{homeTeam.name}</span>
                   </div>
                 </div>
               </td>

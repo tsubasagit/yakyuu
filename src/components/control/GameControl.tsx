@@ -20,29 +20,25 @@ export default function GameControl() {
 
   // ローカル state（スムーズな入力用）
   const [awayName, setAwayName] = useState(awayTeam.name)
-  const [awayShort, setAwayShort] = useState(awayTeam.shortName)
   const [homeName, setHomeName] = useState(homeTeam.name)
-  const [homeShort, setHomeShort] = useState(homeTeam.shortName)
   const [awayColor, setAwayColor] = useState(awayTeam.color)
   const [homeColor, setHomeColor] = useState(homeTeam.color)
 
   // ストア側が変わったらローカル state を追従（IDB復元・newGame 等）
   useEffect(() => { setAwayName(awayTeam.name) }, [awayTeam.name])
-  useEffect(() => { setAwayShort(awayTeam.shortName) }, [awayTeam.shortName])
   useEffect(() => { setHomeName(homeTeam.name) }, [homeTeam.name])
-  useEffect(() => { setHomeShort(homeTeam.shortName) }, [homeTeam.shortName])
   useEffect(() => { setAwayColor(awayTeam.color) }, [awayTeam.color])
   useEffect(() => { setHomeColor(homeTeam.color) }, [homeTeam.color])
 
-  /** ローカル state → ストアに反映 */
+  /** ローカル state → ストアに反映（name を shortName にも使用） */
   const applyTeams = () => {
-    setTeamName('away', awayName, awayShort)
-    setTeamName('home', homeName, homeShort)
+    setTeamName('away', awayName, awayName)
+    setTeamName('home', homeName, homeName)
     setTeamColor('away', awayColor)
     setTeamColor('home', homeColor)
   }
 
-  /** 入力欄からフォーカスが外れたら自動でストアに反映（ボタン押し忘れ防止） */
+  /** 入力欄からフォーカスが外れたら自動でストアに反映 */
   const handleBlur = () => { applyTeams() }
 
   const handleNewGame = () => {
@@ -65,14 +61,6 @@ export default function GameControl() {
             onChange={(e) => setAwayName(e.target.value)}
             onBlur={handleBlur}
           />
-          <input
-            className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm"
-            placeholder="略称（2-3文字）"
-            value={awayShort}
-            onChange={(e) => setAwayShort(e.target.value)}
-            onBlur={handleBlur}
-            maxLength={4}
-          />
           <div className="flex items-center gap-2">
             <label className="text-gray-400 text-xs">カラー</label>
             <input
@@ -92,14 +80,6 @@ export default function GameControl() {
             value={homeName}
             onChange={(e) => setHomeName(e.target.value)}
             onBlur={handleBlur}
-          />
-          <input
-            className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm"
-            placeholder="略称（2-3文字）"
-            value={homeShort}
-            onChange={(e) => setHomeShort(e.target.value)}
-            onBlur={handleBlur}
-            maxLength={4}
           />
           <div className="flex items-center gap-2">
             <label className="text-gray-400 text-xs">カラー</label>
