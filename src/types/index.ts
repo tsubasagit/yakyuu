@@ -99,6 +99,8 @@ export interface GameState {
   showWaitingScreen: boolean
   overlayPositions: Record<string, OverlayPosition>
   overlayScale: number
+  /** コントロールパネルで選択中のチーム。オーバーレイの打順表示に連動する */
+  lineupDisplayTeam: 'away' | 'home'
 }
 
 export const initialPlayerInfo: PlayerInfo = {
@@ -184,6 +186,7 @@ export const initialGameState: GameState = {
   showWaitingScreen: false,
   overlayPositions: { ...DEFAULT_OVERLAY_POSITIONS },
   overlayScale: 1,
+  lineupDisplayTeam: 'away',
 }
 
 export { emptyLineup }

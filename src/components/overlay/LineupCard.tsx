@@ -12,12 +12,15 @@ export default function LineupCard() {
   const homeBatterIndex = useGameStore((s) => s.homeBatterIndex)
   const pitcher = useGameStore((s) => s.pitcher)
   const pitchCount = useGameStore((s) => s.pitchCount)
+  // コントロールパネルで選択中のチームに連動
+  const displayTeam = useGameStore((s) => s.lineupDisplayTeam ?? (currentHalf === 'top' ? 'away' : 'home'))
 
-  const isTop = currentHalf === 'top'
-  const team = isTop ? awayTeam : homeTeam
-  const lineup = isTop ? awayLineup : homeLineup
-  const currentIdx = isTop ? awayBatterIndex : homeBatterIndex
-  const side = isTop ? 'away' : 'home'
+  const side = displayTeam
+  const team = side === 'away' ? awayTeam : homeTeam
+  const lineup = side === 'away' ? awayLineup : homeLineup
+  const currentIdx = side === 'away' ? awayBatterIndex : homeBatterIndex
+  const isAttacking = (side === 'away' && currentHalf === 'top') ||
+    (side === 'home' && currentHalf === 'bottom')
 
   const batters = lineup.slice(0, 9)
   const hasPlayers = batters.some((p) => p.name.length > 0)
@@ -37,7 +40,8 @@ export default function LineupCard() {
         <span className="text-white">
           {side === 'away' ? '▲' : '▼'} {team.name}
         </span>
-        <span className="text-yellow-400 text-[10px] ml-auto">攻撃中</span>
+        {isAttacking && <span className="text-yellow-400 text-[10px] ml-auto">攻撃中</span>}
+        {!isAttacking && <span className="text-gray-500 text-[10px] ml-auto">守備中</span>}
       </div>
 
       {/* 打順（1-9番のみ） */}

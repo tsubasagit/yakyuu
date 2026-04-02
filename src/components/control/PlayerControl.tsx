@@ -21,7 +21,7 @@ function PlayerForm({
     setNumber(player.number)
     setStat(player.stat)
     setStatLabel(player.statLabel)
-  }, [player])
+  }, [player.name, player.number, player.stat, player.statLabel])
 
   const apply = () => onApply({ name, number, stat, statLabel })
 
@@ -34,12 +34,14 @@ function PlayerForm({
           placeholder="名前"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          onBlur={apply}
         />
         <input
           className="bg-gray-700 text-white rounded px-2 py-1.5 text-sm"
           placeholder="背番号"
           value={number}
           onChange={(e) => setNumber(e.target.value)}
+          onBlur={apply}
         />
         <button
           onClick={apply}
@@ -54,12 +56,14 @@ function PlayerForm({
           placeholder="ラベル（例: 打率）"
           value={statLabel}
           onChange={(e) => setStatLabel(e.target.value)}
+          onBlur={apply}
         />
         <input
           className="bg-gray-700 text-white rounded px-2 py-1.5 text-sm col-span-1"
           placeholder="値（例: .312）"
           value={stat}
           onChange={(e) => setStat(e.target.value)}
+          onBlur={apply}
         />
       </div>
     </div>

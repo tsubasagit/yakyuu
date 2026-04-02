@@ -128,7 +128,6 @@ function PitcherRow({
 }
 
 export default function LineupControl() {
-  const [activeTeam, setActiveTeam] = useState<'away' | 'home'>('away')
   const [csvError, setCsvError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const awayTeam = useGameStore((s) => s.awayTeam)
@@ -142,6 +141,10 @@ export default function LineupControl() {
   const setLineup = useGameStore((s) => s.setLineup)
   const selectBatter = useGameStore((s) => s.selectBatter)
   const nextBatter = useGameStore((s) => s.nextBatter)
+  // タブ切り替えをストアに保存し、オーバーレイの打順表示に連動させる
+  const activeTeam = useGameStore((s) => s.lineupDisplayTeam ?? 'away')
+  const setLineupDisplayTeam = useGameStore((s) => s.setLineupDisplayTeam)
+  const setActiveTeam = (team: 'away' | 'home') => setLineupDisplayTeam(team)
 
   const lineup = activeTeam === 'away' ? awayLineup : homeLineup
   const batterIdx = activeTeam === 'away' ? awayBatterIndex : homeBatterIndex
