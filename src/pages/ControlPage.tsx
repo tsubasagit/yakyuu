@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import SyncStatus from '../components/control/SyncStatus'
 import GameControl from '../components/control/GameControl'
 import InningControl from '../components/control/InningControl'
@@ -14,9 +14,7 @@ import MascotControl from '../components/control/MascotControl'
 import { useGameStore, extractGameState } from '../store/useGameStore'
 import { broadcastState, onStateRequest } from '../lib/sync'
 
-/** コントロール側から定期的にフルステートをブロードキャストする。
- *  BroadcastChannel の取りこぼしや、OBS の Custom Dock / Browser Source 間で
- *  localStorage が共有されない環境でもオーバーレイが最新データを受信できるようにする。 */
+/** コントロール側から定期的にフルステートをブロードキャストする。 */
 function usePeriodicBroadcast() {
   useEffect(() => {
     const id = setInterval(() => {
@@ -26,16 +24,38 @@ function usePeriodicBroadcast() {
   }, [])
 }
 
+const SECTIONS = [
+  { id: 'game', label: '試合管理' },
+  { id: 'inning', label: 'イニング' },
+  { id: 'count', label: 'カウント' },
+  { id: 'runner', label: '走者' },
+  { id: 'player', label: '選手情報' },
+  { id: 'score', label: '得点・安打・失策' },
+  { id: 'lineup', label: '打順・選手' },
+  { id: 'effect', label: 'エフェクト' },
+  { id: 'mascot', label: 'マスコット' },
+  { id: 'ticker', label: '速報テロップ' },
+  { id: 'playlog', label: '経過ログ' },
+] as const
+
 export default function ControlPage() {
-  // オーバーレイの起動時リクエストに現在のステートで応答する
   useEffect(() => {
     return onStateRequest(() => {
       broadcastState(extractGameState(useGameStore.getState()))
     })
   }, [])
 
-  // 2秒ごとにフルステートをブロードキャスト（同期の安定性向上）
   usePeriodicBroadcast()
+
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
+  const scrollTo = (id: string) => {
+    sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const setRef = (id: string) => (el: HTMLDivElement | null) => {
+    sectionRefs.current[id] = el
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 p-2 sm:p-4">
@@ -57,21 +77,35 @@ export default function ControlPage() {
           </div>
         </header>
 
+        {/* セクション移動ドロップダウン */}
+        <div className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-sm py-2 -mx-2 px-2 sm:-mx-4 sm:px-4">
+          <select
+            className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm font-bold"
+            defaultValue=""
+            onChange={(e) => { scrollTo(e.target.value); e.target.value = '' }}
+          >
+            <option value="" disabled>セクションへ移動...</option>
+            {SECTIONS.map((s) => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
+          </select>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="space-y-4">
-            <GameControl />
-            <InningControl />
-            <CountControl />
-            <RunnerControl />
-            <PlayerControl />
+            <div ref={setRef('game')}><GameControl /></div>
+            <div ref={setRef('inning')}><InningControl /></div>
+            <div ref={setRef('count')}><CountControl /></div>
+            <div ref={setRef('runner')}><RunnerControl /></div>
+            <div ref={setRef('player')}><PlayerControl /></div>
           </div>
           <div className="space-y-4">
-            <ScoreControl />
-            <LineupControl />
-            <EffectControl />
-            <MascotControl />
-            <TickerControl />
-            <PlayLogControl />
+            <div ref={setRef('score')}><ScoreControl /></div>
+            <div ref={setRef('lineup')}><LineupControl /></div>
+            <div ref={setRef('effect')}><EffectControl /></div>
+            <div ref={setRef('mascot')}><MascotControl /></div>
+            <div ref={setRef('ticker')}><TickerControl /></div>
+            <div ref={setRef('playlog')}><PlayLogControl /></div>
           </div>
         </div>
       </div>
