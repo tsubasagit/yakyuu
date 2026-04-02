@@ -86,7 +86,7 @@ export default function ControlPage() {
 
   return (
     <div className="min-h-screen bg-gray-900 p-2 sm:p-4">
-      <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4">
+      <div className="max-w-5xl mx-auto space-y-3 sm:space-y-4">
         <header className="flex items-center justify-between gap-2">
           <h1 className="text-white text-lg sm:text-2xl font-bold">
             yakyuu コントロール
@@ -104,9 +104,9 @@ export default function ControlPage() {
           </div>
         </header>
 
-        <div className="space-y-3">
+        <div className="columns-1 lg:columns-2 gap-4 space-y-3">
           {sorted.map((section, idx) => (
-            <div key={section.id} className="relative">
+            <div key={section.id} className="relative break-inside-avoid">
               {/* 移動ボタン */}
               <div className="absolute -left-1 top-1 flex flex-col gap-0.5 z-10">
                 <button
