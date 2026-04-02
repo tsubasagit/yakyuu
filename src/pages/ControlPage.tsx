@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import SyncStatus from '../components/control/SyncStatus'
 import GameControl from '../components/control/GameControl'
 import InningControl from '../components/control/InningControl'
@@ -24,19 +24,24 @@ function usePeriodicBroadcast() {
   }, [])
 }
 
-const SECTIONS = [
-  { id: 'game', label: '試合管理' },
-  { id: 'inning', label: 'イニング' },
-  { id: 'count', label: 'カウント' },
-  { id: 'runner', label: '走者' },
-  { id: 'player', label: '選手情報' },
-  { id: 'score', label: '得点・安打・失策' },
-  { id: 'lineup', label: '打順・選手' },
-  { id: 'effect', label: 'エフェクト' },
-  { id: 'mascot', label: 'マスコット' },
-  { id: 'ticker', label: '速報テロップ' },
-  { id: 'playlog', label: '経過ログ' },
-] as const
+interface Section {
+  id: string
+  label: string
+  component: React.ReactNode
+}
+
+const STORAGE_KEY = 'yakyuu-section-order'
+
+function loadOrder(): string[] | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
+function saveOrder(order: string[]) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(order)) } catch {}
+}
 
 export default function ControlPage() {
   useEffect(() => {
@@ -47,19 +52,41 @@ export default function ControlPage() {
 
   usePeriodicBroadcast()
 
-  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const allSections: Section[] = [
+    { id: 'game', label: '試合管理', component: <GameControl /> },
+    { id: 'inning', label: 'イニング', component: <InningControl /> },
+    { id: 'count', label: 'カウント', component: <CountControl /> },
+    { id: 'runner', label: '走者', component: <RunnerControl /> },
+    { id: 'player', label: '選手情報', component: <PlayerControl /> },
+    { id: 'score', label: '得点・安打・失策', component: <ScoreControl /> },
+    { id: 'lineup', label: '打順・選手', component: <LineupControl /> },
+    { id: 'effect', label: 'エフェクト', component: <EffectControl /> },
+    { id: 'mascot', label: 'マスコット', component: <MascotControl /> },
+    { id: 'ticker', label: '速報テロップ', component: <TickerControl /> },
+    { id: 'playlog', label: '経過ログ', component: <PlayLogControl /> },
+  ]
 
-  const scrollTo = (id: string) => {
-    sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
+  const defaultOrder = allSections.map((s) => s.id)
+  const [order, setOrder] = useState<string[]>(() => loadOrder() ?? defaultOrder)
 
-  const setRef = (id: string) => (el: HTMLDivElement | null) => {
-    sectionRefs.current[id] = el
+  const sorted = order
+    .map((id) => allSections.find((s) => s.id === id))
+    .filter((s): s is Section => !!s)
+
+  const move = (idx: number, dir: -1 | 1) => {
+    const target = idx + dir
+    if (target < 0 || target >= sorted.length) return
+    const next = [...order]
+    const tmp = next[idx]!
+    next[idx] = next[target]!
+    next[target] = tmp
+    setOrder(next)
+    saveOrder(next)
   }
 
   return (
     <div className="min-h-screen bg-gray-900 p-2 sm:p-4">
-      <div className="max-w-5xl mx-auto space-y-3 sm:space-y-4">
+      <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4">
         <header className="flex items-center justify-between gap-2">
           <h1 className="text-white text-lg sm:text-2xl font-bold">
             yakyuu コントロール
@@ -77,36 +104,33 @@ export default function ControlPage() {
           </div>
         </header>
 
-        {/* セクション移動ドロップダウン */}
-        <div className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-sm py-2 -mx-2 px-2 sm:-mx-4 sm:px-4">
-          <select
-            className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm font-bold"
-            defaultValue=""
-            onChange={(e) => { scrollTo(e.target.value); e.target.value = '' }}
-          >
-            <option value="" disabled>セクションへ移動...</option>
-            {SECTIONS.map((s) => (
-              <option key={s.id} value={s.id}>{s.label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="space-y-4">
-            <div ref={setRef('game')}><GameControl /></div>
-            <div ref={setRef('inning')}><InningControl /></div>
-            <div ref={setRef('count')}><CountControl /></div>
-            <div ref={setRef('runner')}><RunnerControl /></div>
-            <div ref={setRef('player')}><PlayerControl /></div>
-          </div>
-          <div className="space-y-4">
-            <div ref={setRef('score')}><ScoreControl /></div>
-            <div ref={setRef('lineup')}><LineupControl /></div>
-            <div ref={setRef('effect')}><EffectControl /></div>
-            <div ref={setRef('mascot')}><MascotControl /></div>
-            <div ref={setRef('ticker')}><TickerControl /></div>
-            <div ref={setRef('playlog')}><PlayLogControl /></div>
-          </div>
+        <div className="space-y-3">
+          {sorted.map((section, idx) => (
+            <div key={section.id} className="relative">
+              {/* 移動ボタン */}
+              <div className="absolute -left-1 top-1 flex flex-col gap-0.5 z-10">
+                <button
+                  onClick={() => move(idx, -1)}
+                  disabled={idx === 0}
+                  className="text-gray-500 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
+                  title="上へ移動"
+                >
+                  ▲
+                </button>
+                <button
+                  onClick={() => move(idx, 1)}
+                  disabled={idx === sorted.length - 1}
+                  className="text-gray-500 hover:text-white disabled:opacity-20 text-xs leading-none px-1"
+                  title="下へ移動"
+                >
+                  ▼
+                </button>
+              </div>
+              <div className="ml-4">
+                {section.component}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
