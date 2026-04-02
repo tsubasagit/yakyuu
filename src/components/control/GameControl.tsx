@@ -1,6 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
-import { initialGameState } from '../../types'
 
 export default function GameControl() {
   const awayTeam = useGameStore((s) => s.awayTeam)
@@ -19,6 +18,7 @@ export default function GameControl() {
   const overlayScale = useGameStore((s) => s.overlayScale ?? 1)
   const setOverlayScale = useGameStore((s) => s.setOverlayScale)
 
+  // ローカル state（スムーズな入力用）
   const [awayName, setAwayName] = useState(awayTeam.name)
   const [awayShort, setAwayShort] = useState(awayTeam.shortName)
   const [homeName, setHomeName] = useState(homeTeam.name)
@@ -26,6 +26,15 @@ export default function GameControl() {
   const [awayColor, setAwayColor] = useState(awayTeam.color)
   const [homeColor, setHomeColor] = useState(homeTeam.color)
 
+  // ストア側が変わったらローカル state を追従（IDB復元・newGame 等）
+  useEffect(() => { setAwayName(awayTeam.name) }, [awayTeam.name])
+  useEffect(() => { setAwayShort(awayTeam.shortName) }, [awayTeam.shortName])
+  useEffect(() => { setHomeName(homeTeam.name) }, [homeTeam.name])
+  useEffect(() => { setHomeShort(homeTeam.shortName) }, [homeTeam.shortName])
+  useEffect(() => { setAwayColor(awayTeam.color) }, [awayTeam.color])
+  useEffect(() => { setHomeColor(homeTeam.color) }, [homeTeam.color])
+
+  /** ローカル state → ストアに反映 */
   const applyTeams = () => {
     setTeamName('away', awayName, awayShort)
     setTeamName('home', homeName, homeShort)
@@ -33,16 +42,12 @@ export default function GameControl() {
     setTeamColor('home', homeColor)
   }
 
+  /** 入力欄からフォーカスが外れたら自動でストアに反映（ボタン押し忘れ防止） */
+  const handleBlur = () => { applyTeams() }
+
   const handleNewGame = () => {
     if (confirm('新しい試合を開始しますか？全データがリセットされます。')) {
       newGame()
-      const { awayTeam: a, homeTeam: h } = initialGameState
-      setAwayName(a.name)
-      setAwayShort(a.shortName)
-      setAwayColor(a.color)
-      setHomeName(h.name)
-      setHomeShort(h.shortName)
-      setHomeColor(h.color)
     }
   }
 
@@ -58,12 +63,14 @@ export default function GameControl() {
             placeholder="チーム名"
             value={awayName}
             onChange={(e) => setAwayName(e.target.value)}
+            onBlur={handleBlur}
           />
           <input
             className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm"
             placeholder="略称（2-3文字）"
             value={awayShort}
             onChange={(e) => setAwayShort(e.target.value)}
+            onBlur={handleBlur}
             maxLength={4}
           />
           <div className="flex items-center gap-2">
@@ -72,7 +79,7 @@ export default function GameControl() {
               type="color"
               className="w-8 h-8 rounded cursor-pointer bg-transparent border-0"
               value={awayColor}
-              onChange={(e) => setAwayColor(e.target.value)}
+              onChange={(e) => { setAwayColor(e.target.value); setTeamColor('away', e.target.value) }}
             />
             <span className="text-gray-500 text-xs font-mono">{awayColor}</span>
           </div>
@@ -84,12 +91,14 @@ export default function GameControl() {
             placeholder="チーム名"
             value={homeName}
             onChange={(e) => setHomeName(e.target.value)}
+            onBlur={handleBlur}
           />
           <input
             className="w-full bg-gray-700 text-white rounded px-3 py-2 text-sm"
             placeholder="略称（2-3文字）"
             value={homeShort}
             onChange={(e) => setHomeShort(e.target.value)}
+            onBlur={handleBlur}
             maxLength={4}
           />
           <div className="flex items-center gap-2">
@@ -98,7 +107,7 @@ export default function GameControl() {
               type="color"
               className="w-8 h-8 rounded cursor-pointer bg-transparent border-0"
               value={homeColor}
-              onChange={(e) => setHomeColor(e.target.value)}
+              onChange={(e) => { setHomeColor(e.target.value); setTeamColor('home', e.target.value) }}
             />
             <span className="text-gray-500 text-xs font-mono">{homeColor}</span>
           </div>

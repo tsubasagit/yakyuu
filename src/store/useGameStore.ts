@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import type { EffectType, GameState, HalfInning, LineupPlayer, MascotMode, OverlayPosition, PlayerInfo, Runners } from '../types'
 import { initialGameState, initialPlayerInfo, formatBatterStat, DEFAULT_OVERLAY_POSITIONS } from '../types'
 import { broadcastState } from '../lib/sync'
+import { backupToIDB, restoreFromIDB } from '../lib/idbBackup'
 
 /**
  * オーバーレイページでは localStorage への書き込みを禁止する。
@@ -13,6 +14,10 @@ let _preventPersistWrites = false
 export function setPreventPersistWrites(prevent: boolean) {
   _preventPersistWrites = prevent
 }
+
+/** エフェクト自動クリア用タイマー。多重発火を防ぐため前回をクリアしてから再セットする。 */
+let _effectTimer: ReturnType<typeof setTimeout> | null = null
+const EFFECT_DURATION_MS = 6000
 
 const DATA_KEYS: (keyof GameState)[] = [
   'awayTeam', 'homeTeam', 'currentInning', 'currentHalf', 'isGameOver',
@@ -317,12 +322,14 @@ export const useGameStore = create<GameStore>()(
       setTicker: (text) => set({ ticker: text }),
 
       triggerEffect: (type) => {
+        // 前回のタイマーをクリアして多重発火を防止
+        if (_effectTimer) { clearTimeout(_effectTimer); _effectTimer = null }
         if (type) {
           set({ activeEffect: type, effectTimestamp: Date.now() })
-          // コントロール側のボタン disabled 解除用タイマー
-          setTimeout(() => {
+          _effectTimer = setTimeout(() => {
+            _effectTimer = null
             set({ activeEffect: null, effectTimestamp: 0 })
-          }, 6000)
+          }, EFFECT_DURATION_MS)
         } else {
           set({ activeEffect: null, effectTimestamp: 0 })
         }
@@ -390,7 +397,26 @@ export const useGameStore = create<GameStore>()(
         getItem: (name) => {
           try {
             const raw = localStorage.getItem(name)
-            return raw ? JSON.parse(raw) : null
+            if (raw) return JSON.parse(raw)
+            // localStorage が空の場合 IndexedDB バックアップからの非同期復元をスケジュール
+            // (getItem は同期 API なので初回は null を返し、復元完了後に replaceState する)
+            if (!_preventPersistWrites) {
+              restoreFromIDB().then((backup) => {
+                if (backup) {
+                  try {
+                    const parsed = JSON.parse(backup)
+                    const state = parsed.state
+                    if (state) {
+                      // localStorage に書き戻し + store を更新
+                      localStorage.setItem(name, backup)
+                      useGameStore.getState().replaceState(state)
+                      console.info('Restored state from IndexedDB backup')
+                    }
+                  } catch { /* ignore */ }
+                }
+              })
+            }
+            return null
           } catch {
             // JSON 破損時はデータを削除して初期状態で起動（白画面防止）
             console.warn('Failed to parse localStorage — starting fresh')
@@ -401,7 +427,10 @@ export const useGameStore = create<GameStore>()(
         setItem: (name, value) => {
           if (_preventPersistWrites) return  // オーバーレイは書き込み禁止
           try {
-            localStorage.setItem(name, JSON.stringify(value))
+            const raw = JSON.stringify(value)
+            localStorage.setItem(name, raw)
+            // IndexedDB にもバックアップ（非同期・失敗しても問題なし）
+            backupToIDB(raw)
           } catch {
             // QuotaExceededError: 容量超過時は書き込みをスキップ
             console.warn('localStorage quota exceeded — state not persisted')
@@ -478,10 +507,12 @@ function advanceInningPatch(s: GameState): Partial<GameState> {
   if (s.autoChangeEffect) {
     resetState.activeEffect = 'change'
     resetState.effectTimestamp = Date.now()
-    // コントロール側のボタン disabled 解除用タイマー
-    setTimeout(() => {
+    // 前回のタイマーをクリアして多重発火を防止
+    if (_effectTimer) { clearTimeout(_effectTimer); _effectTimer = null }
+    _effectTimer = setTimeout(() => {
+      _effectTimer = null
       useGameStore.setState({ activeEffect: null, effectTimestamp: 0 })
-    }, 6000)
+    }, EFFECT_DURATION_MS)
   }
 
   if (s.currentHalf === 'top') {

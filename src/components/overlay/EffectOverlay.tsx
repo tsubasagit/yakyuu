@@ -1,6 +1,7 @@
 import { useGameStore } from '../../store/useGameStore'
 
-const EFFECT_STALE_MS = 7000
+// store 側の EFFECT_DURATION_MS (6s) + 同期遅延のマージン 2s
+const EFFECT_STALE_MS = 8000
 
 const EFFECT_CONFIG: Record<string, { label: string; color: string; emoji: string }> = {
   homerun: { label: 'HOME RUN!', color: 'text-yellow-400', emoji: '💥' },

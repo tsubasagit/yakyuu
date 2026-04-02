@@ -14,6 +14,18 @@ import MascotControl from '../components/control/MascotControl'
 import { useGameStore, extractGameState } from '../store/useGameStore'
 import { broadcastState, onStateRequest } from '../lib/sync'
 
+/** コントロール側から定期的にフルステートをブロードキャストする。
+ *  BroadcastChannel の取りこぼしや、OBS の Custom Dock / Browser Source 間で
+ *  localStorage が共有されない環境でもオーバーレイが最新データを受信できるようにする。 */
+function usePeriodicBroadcast() {
+  useEffect(() => {
+    const id = setInterval(() => {
+      broadcastState(extractGameState(useGameStore.getState()))
+    }, 2000)
+    return () => clearInterval(id)
+  }, [])
+}
+
 export default function ControlPage() {
   // オーバーレイの起動時リクエストに現在のステートで応答する
   useEffect(() => {
@@ -21,6 +33,9 @@ export default function ControlPage() {
       broadcastState(extractGameState(useGameStore.getState()))
     })
   }, [])
+
+  // 2秒ごとにフルステートをブロードキャスト（同期の安定性向上）
+  usePeriodicBroadcast()
 
   return (
     <div className="min-h-screen bg-gray-900 p-2 sm:p-4">
