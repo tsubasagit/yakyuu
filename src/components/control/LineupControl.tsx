@@ -140,6 +140,7 @@ function TeamLineupPanel({ side }: { side: 'away' | 'home' }) {
   const setLineup = useGameStore((s) => s.setLineup)
   const selectBatter = useGameStore((s) => s.selectBatter)
   const nextBatter = useGameStore((s) => s.nextBatter)
+  const prevBatter = useGameStore((s) => s.prevBatter)
   const setLineupDisplayTeam = useGameStore((s) => s.setLineupDisplayTeam)
 
   const isAttacking = (side === 'away' && currentHalf === 'top') ||
@@ -186,12 +187,20 @@ function TeamLineupPanel({ side }: { side: 'away' | 'home' }) {
           )}
         </div>
         {isAttacking && (
-          <button
-            onClick={() => { setLineupDisplayTeam(side); nextBatter() }}
-            className="bg-accent hover:bg-accent/80 text-white px-3 py-1.5 rounded text-xs font-bold"
-          >
-            次の打者 →
-          </button>
+          <div className="flex gap-1">
+            <button
+              onClick={() => { setLineupDisplayTeam(side); prevBatter() }}
+              className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-1.5 rounded text-xs font-bold"
+            >
+              ← 前の打者
+            </button>
+            <button
+              onClick={() => { setLineupDisplayTeam(side); nextBatter() }}
+              className="bg-accent hover:bg-accent/80 text-white px-3 py-1.5 rounded text-xs font-bold"
+            >
+              次の打者 →
+            </button>
+          </div>
         )}
       </div>
 

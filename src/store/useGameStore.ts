@@ -65,6 +65,7 @@ interface GameActions {
   setLineupPlayer: (team: 'away' | 'home', index: number, player: LineupPlayer) => void
   selectBatter: (team: 'away' | 'home', index: number) => void
   nextBatter: () => void
+  prevBatter: () => void
   addPlayLog: (text: string) => void
   clearPlayLog: () => void
   setTeamName: (team: 'away' | 'home', name: string, shortName: string) => void
@@ -248,6 +249,26 @@ export const useGameStore = create<GameStore>()(
               statLabel: '',
             },
             count: { ...s.count, balls: 0, strikes: 0 },
+          }
+        }),
+
+      prevBatter: () =>
+        set((s) => {
+          const isAway = s.currentHalf === 'top'
+          const key = isAway ? 'awayLineup' : 'homeLineup'
+          const idxKey = isAway ? 'awayBatterIndex' : 'homeBatterIndex'
+          const currentIdx = s[idxKey]
+          const prevIdx = (currentIdx - 1 + 9) % 9
+          const player = s[key][prevIdx]
+          if (!player) return s
+          return {
+            [idxKey]: prevIdx,
+            batter: {
+              name: player.name,
+              number: player.number,
+              stat: formatBatterStat(player),
+              statLabel: '',
+            },
           }
         }),
 
