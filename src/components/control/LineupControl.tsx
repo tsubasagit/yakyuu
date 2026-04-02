@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import type { LineupPlayer, Position } from '../../types'
-import { CARP_LINEUP } from '../../types'
+import { CARP_LINEUP, HAWKS_LINEUP } from '../../types'
 import { parseLineupCsv } from '../../lib/csvImport'
 
 const POSITIONS: Position[] = ['投', '捕', '一', '二', '三', '遊', '左', '中', '右', 'DH']
@@ -127,29 +127,24 @@ function PitcherRow({
   )
 }
 
-export default function LineupControl() {
+/** 1チーム分の打順パネル */
+function TeamLineupPanel({ side }: { side: 'away' | 'home' }) {
   const [csvError, setCsvError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const awayTeam = useGameStore((s) => s.awayTeam)
-  const homeTeam = useGameStore((s) => s.homeTeam)
-  const awayLineup = useGameStore((s) => s.awayLineup)
-  const homeLineup = useGameStore((s) => s.homeLineup)
-  const awayBatterIndex = useGameStore((s) => s.awayBatterIndex)
-  const homeBatterIndex = useGameStore((s) => s.homeBatterIndex)
+
+  const team = useGameStore((s) => side === 'away' ? s.awayTeam : s.homeTeam)
+  const lineup = useGameStore((s) => side === 'away' ? s.awayLineup : s.homeLineup)
+  const batterIdx = useGameStore((s) => side === 'away' ? s.awayBatterIndex : s.homeBatterIndex)
   const currentHalf = useGameStore((s) => s.currentHalf)
   const setLineupPlayer = useGameStore((s) => s.setLineupPlayer)
   const setLineup = useGameStore((s) => s.setLineup)
   const selectBatter = useGameStore((s) => s.selectBatter)
   const nextBatter = useGameStore((s) => s.nextBatter)
-  // タブ切り替えをストアに保存し、オーバーレイの打順表示に連動させる
-  const activeTeam = useGameStore((s) => s.lineupDisplayTeam ?? 'away')
   const setLineupDisplayTeam = useGameStore((s) => s.setLineupDisplayTeam)
-  const setActiveTeam = (team: 'away' | 'home') => setLineupDisplayTeam(team)
 
-  const lineup = activeTeam === 'away' ? awayLineup : homeLineup
-  const batterIdx = activeTeam === 'away' ? awayBatterIndex : homeBatterIndex
-  const isAttacking = (activeTeam === 'away' && currentHalf === 'top') ||
-    (activeTeam === 'home' && currentHalf === 'bottom')
+  const isAttacking = (side === 'away' && currentHalf === 'top') ||
+    (side === 'home' && currentHalf === 'bottom')
+  const label = side === 'away' ? '先攻' : '後攻'
 
   const handleCsvImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCsvError(null)
@@ -159,104 +154,80 @@ export default function LineupControl() {
     reader.onload = () => {
       try {
         const players = parseLineupCsv(reader.result as string)
-        setLineup(activeTeam, players)
+        setLineup(side, players)
         setCsvError(null)
       } catch (err) {
         setCsvError(err instanceof Error ? err.message : 'CSV読み込みに失敗しました')
       }
     }
     reader.readAsText(file)
-    // 同じファイルを再選択できるようにリセット
     e.target.value = ''
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 space-y-3">
+    <div
+      className={`rounded-lg p-3 space-y-2 ${
+        isAttacking
+          ? 'bg-yellow-900/20 border-2 border-yellow-500/50'
+          : 'bg-gray-800 border border-gray-700'
+      }`}
+    >
+      {/* ヘッダー */}
       <div className="flex items-center justify-between">
-        <h2 className="text-white font-bold text-lg">打順・選手</h2>
-        <button
-          onClick={nextBatter}
-          className="bg-accent hover:bg-accent/80 text-white px-3 py-1.5 rounded text-xs font-bold"
-        >
-          次の打者 →
-        </button>
-      </div>
-
-      {/* チーム切替タブ */}
-      <div className="flex gap-1">
-        <button
-          onClick={() => setActiveTeam('away')}
-          className={`px-3 py-1.5 rounded text-sm font-bold ${
-            activeTeam === 'away'
-              ? 'bg-accent text-white'
-              : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
-          }`}
-        >
-          {awayTeam.name}（先攻）
-        </button>
-        <button
-          onClick={() => setActiveTeam('home')}
-          className={`px-3 py-1.5 rounded text-sm font-bold ${
-            activeTeam === 'home'
-              ? 'bg-accent text-white'
-              : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
-          }`}
-        >
-          {homeTeam.name}（後攻）
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-6 rounded" style={{ backgroundColor: team.color }} />
+          <span className="text-white font-bold text-sm">{team.name}</span>
+          <span className="text-gray-400 text-xs">（{label}）</span>
+          {isAttacking && (
+            <span className="text-yellow-400 text-xs font-bold animate-pulse">攻撃中</span>
+          )}
+          {!isAttacking && (
+            <span className="text-gray-500 text-xs">守備中</span>
+          )}
+        </div>
         {isAttacking && (
-          <span className="text-yellow-400 text-xs flex items-center ml-2">攻撃中</span>
+          <button
+            onClick={() => { setLineupDisplayTeam(side); nextBatter() }}
+            className="bg-accent hover:bg-accent/80 text-white px-3 py-1.5 rounded text-xs font-bold"
+          >
+            次の打者 →
+          </button>
         )}
       </div>
 
-      {/* CSV インポート / プリセット */}
-      <div className="space-y-2">
-        <div className="flex flex-wrap gap-2 items-center">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv,text/csv"
-            className="hidden"
-            onChange={handleCsvImport}
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs font-bold"
-          >
-            CSV読込
-          </button>
-          <a
-            href="./samples/template.csv"
-            download="template.csv"
-            className="text-blue-400 hover:text-blue-300 text-xs underline"
-          >
-            テンプレート
-          </a>
-          <span className="text-gray-600 text-xs">|</span>
-          <span className="text-gray-500 text-xs">サンプル:</span>
-          <a
-            href="./samples/carp.csv"
-            download="carp.csv"
-            className="text-gray-400 hover:text-gray-300 text-xs underline"
-          >
-            広島カープ
-          </a>
-        </div>
-        {/* プリセット */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => setLineup(activeTeam, [...CARP_LINEUP])}
-            className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded text-xs"
-          >
-            広島カープ読込
-          </button>
-        </div>
-        {csvError && (
-          <div className="bg-red-900/50 border border-red-500 rounded px-3 py-1.5 text-red-300 text-xs">
-            {csvError}
-          </div>
-        )}
+      {/* CSV / プリセット */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv,text/csv"
+          className="hidden"
+          onChange={handleCsvImport}
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold"
+        >
+          CSV読込
+        </button>
+        <button
+          onClick={() => setLineup(side, [...CARP_LINEUP])}
+          className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded text-xs"
+        >
+          広島カープ
+        </button>
+        <button
+          onClick={() => setLineup(side, [...HAWKS_LINEUP])}
+          className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded text-xs"
+        >
+          ソフトバンク
+        </button>
       </div>
+      {csvError && (
+        <div className="bg-red-900/50 border border-red-500 rounded px-3 py-1.5 text-red-300 text-xs">
+          {csvError}
+        </div>
+      )}
 
       {/* ラインナップ（1-9番打者） */}
       <div className="space-y-0.5">
@@ -265,8 +236,8 @@ export default function LineupControl() {
             key={player.order}
             player={player}
             isCurrent={idx === batterIdx && isAttacking}
-            onSelect={() => selectBatter(activeTeam, idx)}
-            onChange={(p) => setLineupPlayer(activeTeam, idx, p)}
+            onSelect={() => selectBatter(side, idx)}
+            onChange={(p) => setLineupPlayer(side, idx, p)}
           />
         ))}
       </div>
@@ -275,10 +246,20 @@ export default function LineupControl() {
       {lineup[9] && (
         <PitcherRow
           player={lineup[9]}
-          onSelect={() => selectBatter(activeTeam, 9)}
-          onChange={(p) => setLineupPlayer(activeTeam, 9, p)}
+          onSelect={() => selectBatter(side, 9)}
+          onChange={(p) => setLineupPlayer(side, 9, p)}
         />
       )}
+    </div>
+  )
+}
+
+export default function LineupControl() {
+  return (
+    <div className="space-y-3">
+      <h2 className="text-white font-bold text-lg">打順・選手</h2>
+      <TeamLineupPanel side="away" />
+      <TeamLineupPanel side="home" />
     </div>
   )
 }
