@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useGameStore } from '../store/useGameStore'
 import { cacheOverlayState } from '../lib/overlayCache'
+import { isGlobalDragActive } from '../lib/dragState'
 
 const STORAGE_KEY = 'yakyuu-game-state'
 const POLL_INTERVAL = 500
@@ -23,6 +24,8 @@ export function useStorageSync(): void {
 
   useEffect(() => {
     function applyStoredState() {
+      // ドラッグ中はスキップ（点滅防止）
+      if (isGlobalDragActive()) return
       const raw = localStorage.getItem(STORAGE_KEY)
       if (!raw || raw === lastRawRef.current) return
       lastRawRef.current = raw

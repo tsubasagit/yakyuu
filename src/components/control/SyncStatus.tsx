@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 const HEARTBEAT_KEY = 'yakyuu-overlay-heartbeat'
-const STALE_THRESHOLD = 3000 // 3秒以上古い = 切断とみなす
+const STALE_THRESHOLD = 5000 // 5秒以上古い = 切断とみなす
 
 type Status = 'connected' | 'disconnected'
 
@@ -23,7 +23,7 @@ export default function SyncStatus() {
       }
     }
     check()
-    const interval = setInterval(check, 1500)
+    const interval = setInterval(check, 2000)
     return () => clearInterval(interval)
   }, [])
 

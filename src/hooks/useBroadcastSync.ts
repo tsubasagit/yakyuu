@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useGameStore } from '../store/useGameStore'
 import { onStateUpdate } from '../lib/sync'
 import { cacheOverlayState } from '../lib/overlayCache'
+import { isGlobalDragActive } from '../lib/dragState'
 
 export function useBroadcastSync(): void {
   const replaceState = useGameStore((s) => s.replaceState)
@@ -10,6 +11,9 @@ export function useBroadcastSync(): void {
 
   useEffect(() => {
     const unsubscribe = onStateUpdate((state) => {
+      // ドラッグ中は replaceState をスキップ（点滅防止）
+      if (isGlobalDragActive()) return
+
       // overlayPositions: コントロール側で変更があった場合のみ反映する。
       // オーバーレイは localStorage に書けないため、
       // ドラッグ後のブロードキャストで古い位置に戻るのを防ぐ。

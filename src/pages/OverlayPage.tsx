@@ -13,6 +13,7 @@ import Ticker from '../components/overlay/Ticker'
 import EffectOverlay from '../components/overlay/EffectOverlay'
 import Mascot from '../components/overlay/Mascot'
 import WaitingScreen from '../components/overlay/WaitingScreen'
+import { setGlobalDragActive } from '../lib/dragState'
 
 const CANVAS_W = 1920
 const CANVAS_H = 1080
@@ -65,6 +66,7 @@ function DraggableBox({
   const onMouseDown = useCallback(
     (e: React.MouseEvent) => {
       dragging.current = true
+      setGlobalDragActive(true)
       const cur = localPosRef.current
       offset.current = { x: e.clientX - cur.x, y: e.clientY - cur.y }
       e.preventDefault()
@@ -83,6 +85,7 @@ function DraggableBox({
     const onMouseUp = () => {
       if (!dragging.current) return
       dragging.current = false
+      setGlobalDragActive(false)
       // ドラッグ終了時のみ store に書き込む（localStorage 書き込み削減）
       setOverlayPosition(id, localPosRef.current)
     }
@@ -123,7 +126,7 @@ function useOverlayHeartbeat() {
       }
     }
     beat()
-    const interval = setInterval(beat, 1500)
+    const interval = setInterval(beat, 1000)
     return () => clearInterval(interval)
   }, [])
 }

@@ -11,6 +11,7 @@ export default function HomePage() {
             野球ライブ配信用スコアボードオーバーレイ
           </p>
           <p className="text-slate-500 text-sm mt-2">OBSブラウザソース対応 / サーバー不要 / 無料</p>
+          <p className="text-slate-600 text-xs mt-3">v0.2.0</p>
         </div>
 
         {/* リンクカード */}
@@ -89,6 +90,24 @@ export default function HomePage() {
                 {tech}
               </span>
             ))}
+          </div>
+        </div>
+
+        {/* OBS ウインドウキャプチャ利用ガイド */}
+        <div className="mb-12">
+          <h2 className="text-xl font-bold mb-4 border-b border-slate-700 pb-2">OBS ウインドウキャプチャで使う</h2>
+          <div className="bg-slate-800 border border-emerald-700/50 rounded-lg p-4 text-sm">
+            <p className="text-emerald-400 font-bold mb-2">v0.2.0 推奨の使い方</p>
+            <p className="text-slate-300 mb-3">
+              ブラウザ（Chrome等）でオーバーレイを開き、OBSの「ウインドウキャプチャ」で以下のパネルを個別にキャプチャすると安定して利用できます。
+            </p>
+            <ul className="text-slate-400 space-y-1 ml-4">
+              <li>- <strong className="text-white">得点スコア</strong>（スコアボードパネル）</li>
+              <li>- <strong className="text-white">打順・選手</strong>（ラインナップカード）</li>
+            </ul>
+            <p className="text-slate-500 text-xs mt-3">
+              ※ OBSの「クロップ/パッド」フィルタで必要な領域だけ切り出すと綺麗に配置できます
+            </p>
           </div>
         </div>
 
