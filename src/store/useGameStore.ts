@@ -499,7 +499,12 @@ export const useGameStore = create<GameStore>()(
           if (s.currentHalf === 'bottom') {
             // 裏→表: 後攻が守備に入る → 後攻の active pitcher を表示
             const homeActive = getActivePitcherInfo(s.homePitcherHistory)
-            if (homeActive) base.pitcher = homeActive
+            if (homeActive) {
+              base.pitcher = homeActive
+            } else {
+              const p = s.homeLineup[9]
+              if (p?.name) base.pitcher = { name: p.name, number: p.number, stat: p.record || '', statLabel: p.appearances ? `${p.appearances}登板` : '' }
+            }
             const hp = s.homePitcherHistory.find(p => p.isActive)
             if (hp) base.homePitchCount = hp.pitchCount
             return { ...base, currentHalf: 'top' as const }
@@ -507,7 +512,12 @@ export const useGameStore = create<GameStore>()(
           if (s.currentInning <= 1) return s
           // 表→前回裏: 先攻が守備に入る → 先攻の active pitcher を表示
           const awayActive = getActivePitcherInfo(s.awayPitcherHistory)
-          if (awayActive) base.pitcher = awayActive
+          if (awayActive) {
+            base.pitcher = awayActive
+          } else {
+            const p = s.awayLineup[9]
+            if (p?.name) base.pitcher = { name: p.name, number: p.number, stat: p.record || '', statLabel: p.appearances ? `${p.appearances}登板` : '' }
+          }
           const ap = s.awayPitcherHistory.find(p => p.isActive)
           if (ap) base.awayPitchCount = ap.pitchCount
           return { ...base, currentInning: s.currentInning - 1, currentHalf: 'bottom' as const }
@@ -677,7 +687,18 @@ function advanceInningPatch(s: GameState): Partial<GameState> {
   if (s.currentHalf === 'top') {
     // 表→裏: 先攻が守備に入る → 先攻の active pitcher を表示
     const awayActive = getActivePitcherInfo(s.awayPitcherHistory)
-    if (awayActive) resetState.pitcher = awayActive
+    if (awayActive) {
+      resetState.pitcher = awayActive
+    } else {
+      // 履歴未登録時は lineup[9] からフォールバック
+      const p = s.awayLineup[9]
+      if (p?.name) {
+        resetState.pitcher = {
+          name: p.name, number: p.number,
+          stat: p.record || '', statLabel: p.appearances ? `${p.appearances}登板` : '',
+        }
+      }
+    }
     const ap = s.awayPitcherHistory.find(p => p.isActive)
     if (ap) resetState.awayPitchCount = ap.pitchCount
     return { ...resetState, currentHalf: 'bottom' as const }
@@ -691,7 +712,17 @@ function advanceInningPatch(s: GameState): Partial<GameState> {
   }
 
   const homeActive = getActivePitcherInfo(s.homePitcherHistory)
-  if (homeActive) resetState.pitcher = homeActive
+  if (homeActive) {
+    resetState.pitcher = homeActive
+  } else {
+    const p = s.homeLineup[9]
+    if (p?.name) {
+      resetState.pitcher = {
+        name: p.name, number: p.number,
+        stat: p.record || '', statLabel: p.appearances ? `${p.appearances}登板` : '',
+      }
+    }
+  }
   const hp = s.homePitcherHistory.find(p => p.isActive)
   if (hp) resetState.homePitchCount = hp.pitchCount
 
