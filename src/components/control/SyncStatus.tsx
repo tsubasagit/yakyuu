@@ -11,7 +11,13 @@ export default function SyncStatus() {
   useEffect(() => {
     function check() {
       try {
-        const raw = localStorage.getItem(HEARTBEAT_KEY)
+        // localStorage を優先チェック
+        let raw = localStorage.getItem(HEARTBEAT_KEY)
+        // Cookie フォールバック: OBS で localStorage が共有されない場合
+        if (!raw) {
+          const match = document.cookie.match(/yakyuu-hb=(\d+)/)
+          if (match) raw = match[1]!
+        }
         if (!raw) {
           setStatus('disconnected')
           return

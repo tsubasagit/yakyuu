@@ -115,15 +115,17 @@ function DraggableBox({
 
 const HEARTBEAT_KEY = 'yakyuu-overlay-heartbeat'
 
-/** オーバーレイが生きていることをコントロール側に伝えるハートビート */
+/** オーバーレイが生きていることをコントロール側に伝えるハートビート。
+ *  localStorage + Cookie の二重書き込みで、OBS 環境での
+ *  Custom Dock / Browser Source 間の検知を改善する。 */
 function useOverlayHeartbeat() {
   useEffect(() => {
     function beat() {
-      try {
-        localStorage.setItem(HEARTBEAT_KEY, String(Date.now()))
-      } catch {
-        // quota exceeded — 無視
-      }
+      const ts = String(Date.now())
+      try { localStorage.setItem(HEARTBEAT_KEY, ts) } catch { /* ignore */ }
+      // Cookie フォールバック: OBS で localStorage が共有されない場合でも
+      // Cookie は同一オリジンで共有されるため検知可能
+      try { document.cookie = `yakyuu-hb=${ts};path=/;max-age=10;SameSite=Lax` } catch { /* ignore */ }
     }
     beat()
     const interval = setInterval(beat, 1000)

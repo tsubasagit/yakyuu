@@ -9,11 +9,24 @@ import { backupToIDB, restoreFromIDB } from '../lib/idbBackup'
  * オーバーレイページでは localStorage への書き込みを禁止する。
  * コントロールパネルだけが writer、オーバーレイは reader に徹することで
  * 書き込み競合（チーム名が反映されない・選手データが初期化される等）を防止する。
+ *
+ * モジュールレベルで URL ハッシュを判定し、useEffect より前に書き込みを禁止する。
+ * これにより Zustand persist の初期化時の書き込み競合も防止できる。
  */
 let _preventPersistWrites = false
+if (typeof window !== 'undefined' && window.location.hash.includes('/overlay')) {
+  _preventPersistWrites = true
+}
 export function setPreventPersistWrites(prevent: boolean) {
   _preventPersistWrites = prevent
 }
+
+/**
+ * IDB 復元中フラグ。
+ * localStorage が空 → IDB 復元の間に、Zustand persist が initialGameState を
+ * IDB に書き戻して復元データを上書きするレースコンディションを防止する。
+ */
+let _idbRestoreInProgress = false
 
 /** エフェクト自動クリア用タイマー。多重発火を防ぐため前回をクリアしてから再セットする。 */
 let _effectTimer: ReturnType<typeof setTimeout> | null = null
@@ -432,22 +445,25 @@ export const useGameStore = create<GameStore>()(
             if (raw) return JSON.parse(raw)
             // localStorage が空の場合 IndexedDB バックアップからの非同期復元をスケジュール
             // (getItem は同期 API なので初回は null を返し、復元完了後に replaceState する)
-            if (!_preventPersistWrites) {
-              restoreFromIDB().then((backup) => {
-                if (backup) {
-                  try {
-                    const parsed = JSON.parse(backup)
-                    const state = parsed.state
-                    if (state) {
-                      // localStorage に書き戻し + store を更新
+            // オーバーレイでも IDB 復元を行う（OBS 再起動対応）
+            _idbRestoreInProgress = true
+            restoreFromIDB().then((backup) => {
+              _idbRestoreInProgress = false
+              if (backup) {
+                try {
+                  const parsed = JSON.parse(backup)
+                  const state = parsed.state
+                  if (state) {
+                    // コントロールパネルの場合のみ localStorage に書き戻す
+                    if (!_preventPersistWrites) {
                       localStorage.setItem(name, backup)
-                      useGameStore.getState().replaceState(state)
-                      console.info('Restored state from IndexedDB backup')
                     }
-                  } catch { /* ignore */ }
-                }
-              })
-            }
+                    useGameStore.getState().replaceState(state)
+                    console.info('Restored state from IndexedDB backup')
+                  }
+                } catch { /* ignore */ }
+              }
+            }).catch(() => { _idbRestoreInProgress = false })
             return null
           } catch {
             // JSON 破損時はデータを削除して初期状態で起動（白画面防止）
@@ -461,8 +477,10 @@ export const useGameStore = create<GameStore>()(
           try {
             const raw = JSON.stringify(value)
             localStorage.setItem(name, raw)
-            // IndexedDB にもバックアップ（非同期・失敗しても問題なし）
-            backupToIDB(raw)
+            // IDB 復元中はバックアップ上書きを防止（initialGameState で上書きされるのを防ぐ）
+            if (!_idbRestoreInProgress) {
+              backupToIDB(raw)
+            }
           } catch {
             // QuotaExceededError: 容量超過時は書き込みをスキップ
             console.warn('localStorage quota exceeded — state not persisted')

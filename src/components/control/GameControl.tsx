@@ -41,6 +41,16 @@ export default function GameControl() {
   /** 入力欄からフォーカスが外れたら自動でストアに反映 */
   const handleBlur = () => { applyTeams() }
 
+  // デバウンス付き自動反映: OBS Dock では blur が発火しないケースがあるため、
+  // 入力変更 500ms 後にストアへ自動反映する
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTeamName('away', awayName, awayName)
+      setTeamName('home', homeName, homeName)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [awayName, homeName, setTeamName])
+
   const handleNewGame = () => {
     if (confirm('新しい試合を開始しますか？全データがリセットされます。')) {
       newGame()
