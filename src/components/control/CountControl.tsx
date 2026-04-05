@@ -9,12 +9,6 @@ export default function CountControl() {
   const subtractBall = useGameStore((s) => s.subtractBall)
   const subtractStrike = useGameStore((s) => s.subtractStrike)
   const subtractOut = useGameStore((s) => s.subtractOut)
-  const currentHalf = useGameStore((s) => s.currentHalf)
-  const awayPitchCount = useGameStore((s) => s.awayPitchCount)
-  const homePitchCount = useGameStore((s) => s.homePitchCount)
-  const setPitchCount = useGameStore((s) => s.setPitchCount)
-  const pitcher = useGameStore((s) => s.pitcher)
-  const pitchCount = currentHalf === 'top' ? homePitchCount : awayPitchCount
 
   return (
     <div className="bg-gray-800 rounded-lg p-4 space-y-3">
@@ -95,36 +89,6 @@ export default function CountControl() {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* 球数 */}
-      <div className="flex items-center gap-3 pt-2 border-t border-gray-700">
-        <span className="text-gray-400 text-sm">投球数{pitcher.name ? ` ${pitcher.name}` : currentHalf === 'top' ? '(後攻)' : '(先攻)'}</span>
-        <span className="text-white font-mono text-xl font-bold">{pitchCount}</span>
-        <button
-          onClick={() => setPitchCount(Math.max(0, pitchCount - 1))}
-          className="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs"
-        >
-          -1
-        </button>
-        <button
-          onClick={() => setPitchCount(pitchCount + 1)}
-          className="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs"
-        >
-          +1
-        </button>
-        <button
-          onClick={() => setPitchCount(pitchCount + 10)}
-          className="bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold"
-        >
-          +10
-        </button>
-        <button
-          onClick={() => setPitchCount(0)}
-          className="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs"
-        >
-          リセット
-        </button>
       </div>
 
       {/* プリセット */}
