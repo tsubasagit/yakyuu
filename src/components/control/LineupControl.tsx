@@ -95,6 +95,7 @@ function PitcherRow({
   const history = useGameStore(s =>
     side === 'away' ? s.awayPitcherHistory : s.homePitcherHistory
   )
+  const setTeamPitchCount = useGameStore(s => s.setTeamPitchCount)
   const archived = history.filter(p => !p.isActive)
   const active = history.find(p => p.isActive)
 
@@ -145,12 +146,32 @@ function PitcherRow({
             </div>
           ))}
           {active && (
-            <div className="flex gap-2 text-green-400">
-              <span>{archived.length === 0 ? '先発' : `${archived.length}番手`}</span>
-              <span>{active.name}</span>
-              <span>{formatInningsPitched(active.outsRecorded)}回</span>
-              <span>{active.pitchCount}球</span>
-              <span className="animate-pulse">登板中</span>
+            <div className="space-y-1">
+              <div className="flex gap-2 text-green-400">
+                <span>{archived.length === 0 ? '先発' : `${archived.length}番手`}</span>
+                <span>{active.name}</span>
+                <span>{formatInningsPitched(active.outsRecorded)}回</span>
+                <span className="font-bold">{active.pitchCount}球</span>
+                <span className="animate-pulse">登板中</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setTeamPitchCount(side, Math.max(0, active.pitchCount - 1))}
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-1.5 py-0.5 rounded text-[10px]"
+                >-1</button>
+                <button
+                  onClick={() => setTeamPitchCount(side, active.pitchCount + 1)}
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-1.5 py-0.5 rounded text-[10px]"
+                >+1</button>
+                <button
+                  onClick={() => setTeamPitchCount(side, active.pitchCount + 10)}
+                  className="bg-blue-700 hover:bg-blue-600 text-white px-1.5 py-0.5 rounded text-[10px] font-bold"
+                >+10</button>
+                <button
+                  onClick={() => setTeamPitchCount(side, 0)}
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-1.5 py-0.5 rounded text-[10px]"
+                >リセット</button>
+              </div>
             </div>
           )}
         </div>

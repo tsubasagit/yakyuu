@@ -122,6 +122,7 @@ interface GameActions {
   subtractRun: (team: 'away' | 'home') => void
   addPitch: () => void
   setPitchCount: (n: number) => void
+  setTeamPitchCount: (team: 'away' | 'home', n: number) => void
   startGameTimer: () => void
   stopGameTimer: () => void
   setTicker: (text: string) => void
@@ -442,6 +443,17 @@ export const useGameStore = create<GameStore>()(
       setPitchCount: (n) => set((s) => {
         const pitchKey = s.currentHalf === 'top' ? 'homePitchCount' : 'awayPitchCount'
         const histKey = getDefendingHistKey(s.currentHalf)
+        const history = [...s[histKey]]
+        const idx = history.findIndex(p => p.isActive)
+        if (idx >= 0) {
+          history[idx] = { ...history[idx]!, pitchCount: n }
+        }
+        return { [pitchKey]: n, [histKey]: history }
+      }),
+
+      setTeamPitchCount: (team, n) => set((s) => {
+        const pitchKey = team === 'away' ? 'awayPitchCount' : 'homePitchCount'
+        const histKey = team === 'away' ? 'awayPitcherHistory' : 'homePitcherHistory'
         const history = [...s[histKey]]
         const idx = history.findIndex(p => p.isActive)
         if (idx >= 0) {

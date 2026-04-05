@@ -70,45 +70,6 @@ function PlayerForm({
   )
 }
 
-function PitchCountControl() {
-  const currentHalf = useGameStore((s) => s.currentHalf)
-  const awayPitchCount = useGameStore((s) => s.awayPitchCount)
-  const homePitchCount = useGameStore((s) => s.homePitchCount)
-  const setPitchCount = useGameStore((s) => s.setPitchCount)
-  const pitchCount = currentHalf === 'top' ? homePitchCount : awayPitchCount
-
-  return (
-    <div className="flex items-center gap-2 pt-1">
-      <span className="text-gray-400 text-xs">投球数</span>
-      <span className="text-white font-mono text-lg font-bold">{pitchCount}</span>
-      <button
-        onClick={() => setPitchCount(Math.max(0, pitchCount - 1))}
-        className="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs"
-      >
-        -1
-      </button>
-      <button
-        onClick={() => setPitchCount(pitchCount + 1)}
-        className="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs"
-      >
-        +1
-      </button>
-      <button
-        onClick={() => setPitchCount(pitchCount + 10)}
-        className="bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold"
-      >
-        +10
-      </button>
-      <button
-        onClick={() => setPitchCount(0)}
-        className="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs"
-      >
-        リセット
-      </button>
-    </div>
-  )
-}
-
 export default function PlayerControl() {
   const batter = useGameStore((s) => s.batter)
   const pitcher = useGameStore((s) => s.pitcher)
@@ -120,7 +81,6 @@ export default function PlayerControl() {
       <h2 className="text-white font-bold text-lg">選手情報</h2>
       <PlayerForm label="打者" player={batter} onApply={setBatter} />
       <PlayerForm label="投手" player={pitcher} onApply={setPitcher} />
-      <PitchCountControl />
     </div>
   )
 }
