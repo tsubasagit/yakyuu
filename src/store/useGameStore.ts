@@ -25,7 +25,7 @@ const DATA_KEYS: (keyof GameState)[] = [
   'awayErrors', 'homeErrors', 'count', 'runners',
   'batter', 'pitcher', 'awayLineup', 'homeLineup',
   'awayBatterIndex', 'homeBatterIndex', 'playLog',
-  'pitchCount', 'gameStartTime', 'ticker', 'activeEffect', 'effectTimestamp',
+  'awayPitchCount', 'homePitchCount', 'gameStartTime', 'ticker', 'activeEffect', 'effectTimestamp',
   'showMascot', 'mascotMode', 'mascotImages', 'autoChangeEffect', 'showWaitingScreen',
   'overlayPositions', 'overlayScale', 'lineupDisplayTeam',
 ]
@@ -104,24 +104,26 @@ export const useGameStore = create<GameStore>()(
 
       addBall: () =>
         set((s) => {
+          const pitchKey = s.currentHalf === 'top' ? 'homePitchCount' : 'awayPitchCount'
           const balls = s.count.balls + 1
           if (balls >= 4) {
-            return { ...applyWalk(s), pitchCount: s.pitchCount + 1 }
+            return { ...applyWalk(s), [pitchKey]: s[pitchKey] + 1 }
           }
-          return { count: { ...s.count, balls }, pitchCount: s.pitchCount + 1 }
+          return { count: { ...s.count, balls }, [pitchKey]: s[pitchKey] + 1 }
         }),
 
       addStrike: () =>
         set((s) => {
+          const pitchKey = s.currentHalf === 'top' ? 'homePitchCount' : 'awayPitchCount'
           const strikes = s.count.strikes + 1
           if (strikes >= 3) {
             const outs = s.count.outs + 1
             if (outs >= 3) {
-              return { ...advanceInningPatch(s), pitchCount: s.pitchCount + 1 }
+              return { ...advanceInningPatch(s), [pitchKey]: s[pitchKey] + 1 }
             }
-            return { count: { balls: 0, strikes: 0, outs }, pitchCount: s.pitchCount + 1 }
+            return { count: { balls: 0, strikes: 0, outs }, [pitchKey]: s[pitchKey] + 1 }
           }
-          return { count: { ...s.count, strikes }, pitchCount: s.pitchCount + 1 }
+          return { count: { ...s.count, strikes }, [pitchKey]: s[pitchKey] + 1 }
         }),
 
       addOut: () =>
@@ -333,9 +335,15 @@ export const useGameStore = create<GameStore>()(
           return recalcTotals({ ...extractGameState(s), innings })
         }),
 
-      addPitch: () => set((s) => ({ pitchCount: s.pitchCount + 1 })),
+      addPitch: () => set((s) => {
+        const pitchKey = s.currentHalf === 'top' ? 'homePitchCount' : 'awayPitchCount'
+        return { [pitchKey]: s[pitchKey] + 1 }
+      }),
 
-      setPitchCount: (n) => set({ pitchCount: n }),
+      setPitchCount: (n) => set((s) => {
+        const pitchKey = s.currentHalf === 'top' ? 'homePitchCount' : 'awayPitchCount'
+        return { [pitchKey]: n }
+      }),
 
       startGameTimer: () => set({ gameStartTime: Date.now(), showWaitingScreen: false }),
 

@@ -14,7 +14,7 @@ export default function Scoreboard() {
   const currentHalf = useGameStore((s) => s.currentHalf)
   const count = useGameStore((s) => s.count)
   const runners = useGameStore((s) => s.runners)
-  const pitchCount = useGameStore((s) => s.pitchCount)
+  const pitchCount = useGameStore((s) => s.currentHalf === 'top' ? s.homePitchCount : s.awayPitchCount)
 
   const minInnings = 9
   const displayCount = Math.max(minInnings, innings.length)

@@ -87,7 +87,8 @@ export interface GameState {
   awayBatterIndex: number
   homeBatterIndex: number
   playLog: PlayLogEntry[]
-  pitchCount: number
+  awayPitchCount: number
+  homePitchCount: number
   gameStartTime: number | null
   ticker: string
   activeEffect: EffectType
@@ -188,7 +189,8 @@ export const initialGameState: GameState = {
   awayBatterIndex: 0,
   homeBatterIndex: 0,
   playLog: [],
-  pitchCount: 0,
+  awayPitchCount: 0,
+  homePitchCount: 0,
   gameStartTime: null,
   ticker: '',
   activeEffect: null,

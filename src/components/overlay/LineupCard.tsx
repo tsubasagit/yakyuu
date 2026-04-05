@@ -11,7 +11,7 @@ export default function LineupCard() {
   const awayBatterIndex = useGameStore((s) => s.awayBatterIndex)
   const homeBatterIndex = useGameStore((s) => s.homeBatterIndex)
   const pitcher = useGameStore((s) => s.pitcher)
-  const pitchCount = useGameStore((s) => s.pitchCount)
+  const pitchCount = useGameStore((s) => s.currentHalf === 'top' ? s.homePitchCount : s.awayPitchCount)
   // コントロールパネルで選択中のチームに連動
   const displayTeam = useGameStore((s) => s.lineupDisplayTeam ?? (currentHalf === 'top' ? 'away' : 'home'))
 

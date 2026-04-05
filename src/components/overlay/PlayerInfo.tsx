@@ -3,7 +3,7 @@ import { useGameStore } from '../../store/useGameStore'
 export default function PlayerInfo() {
   const batter = useGameStore((s) => s.batter)
   const pitcher = useGameStore((s) => s.pitcher)
-  const pitchCount = useGameStore((s) => s.pitchCount)
+  const pitchCount = useGameStore((s) => s.currentHalf === 'top' ? s.homePitchCount : s.awayPitchCount)
 
   const hasBatter = batter.name.length > 0
   const hasPitcher = pitcher.name.length > 0
