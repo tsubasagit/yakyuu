@@ -270,15 +270,20 @@ export const useGameStore = create<GameStore>()(
 
             // 同じ投手の場合は表示更新のみ（アピアランス重複防止）
             const activeIdx = history.findIndex(p => p.isActive)
+            const pitcherInfo: PlayerInfo = {
+              name: player.name,
+              number: player.number,
+              stat: player.record || '',
+              statLabel: player.appearances ? `${player.appearances}登板` : '',
+            }
+
+            // このチームが現在守備中かどうか判定
+            const isDefending = (team === 'home' && s.currentHalf === 'top') ||
+              (team === 'away' && s.currentHalf === 'bottom')
+
             if (activeIdx >= 0 && history[activeIdx]!.name === player.name && history[activeIdx]!.number === player.number) {
-              return {
-                pitcher: {
-                  name: player.name,
-                  number: player.number,
-                  stat: player.record || '',
-                  statLabel: player.appearances ? `${player.appearances}登板` : '',
-                },
-              }
+              // 同じ投手 → 守備中の場合のみ表示を更新
+              return isDefending ? { pitcher: pitcherInfo } : {}
             }
 
             // 現在のアクティブ投手をアーカイブ
@@ -307,16 +312,15 @@ export const useGameStore = create<GameStore>()(
               isActive: true,
             })
 
-            return {
+            // 履歴と投球数は常に更新。表示投手は守備中チームのみ更新
+            const result: Partial<GameState> = {
               [histKey]: history,
               [pitchCountKey]: 0,
-              pitcher: {
-                name: player.name,
-                number: player.number,
-                stat: player.record || '',
-                statLabel: player.appearances ? `${player.appearances}登板` : '',
-              },
             }
+            if (isDefending) {
+              result.pitcher = pitcherInfo
+            }
+            return result
           }
 
           const idxKey = team === 'away' ? 'awayBatterIndex' : 'homeBatterIndex'
