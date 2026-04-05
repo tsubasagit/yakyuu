@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import type { LineupPlayer, Position } from '../../types'
-import { CARP_LINEUP, HAWKS_LINEUP } from '../../types'
+import { CARP_LINEUP, HAWKS_LINEUP, formatInningsPitched } from '../../types'
 import { parseLineupCsv } from '../../lib/csvImport'
 
 const POSITIONS: Position[] = ['投', '捕', '一', '二', '三', '遊', '左', '中', '右', 'DH']
@@ -83,46 +83,78 @@ function BatterRow({
 
 function PitcherRow({
   player,
+  side,
   onSelect,
   onChange,
 }: {
   player: LineupPlayer
+  side: 'away' | 'home'
   onSelect: () => void
   onChange: (p: LineupPlayer) => void
 }) {
+  const history = useGameStore(s =>
+    side === 'away' ? s.awayPitcherHistory : s.homePitcherHistory
+  )
+  const archived = history.filter(p => !p.isActive)
+  const active = history.find(p => p.isActive)
+
   return (
-    <div className="flex items-center gap-1.5 text-sm rounded px-1.5 py-1 bg-red-900/20 border border-red-800/30">
-      <span className="text-red-400 w-4 text-center text-xs shrink-0 font-bold">
-        P
-      </span>
-      <span className="text-red-400 text-xs w-12 shrink-0 text-center font-bold">
-        投
-      </span>
-      <input
-        className="bg-gray-700 text-white rounded px-2 py-1 text-xs flex-1 min-w-0"
-        placeholder="投手名"
-        value={player.name}
-        onChange={(e) => onChange({ ...player, name: e.target.value })}
-      />
-      <input
-        className="bg-gray-700 text-white rounded px-1 py-1 text-xs w-10 shrink-0"
-        placeholder="登板"
-        value={player.appearances || ''}
-        onChange={(e) => onChange({ ...player, appearances: e.target.value })}
-      />
-      <input
-        className="bg-gray-700 text-white rounded px-1 py-1 text-xs w-20 shrink-0"
-        placeholder="勝敗"
-        value={player.record || ''}
-        onChange={(e) => onChange({ ...player, record: e.target.value })}
-      />
-      <button
-        onClick={onSelect}
-        className="text-xs px-2 py-1 rounded shrink-0 bg-red-700 hover:bg-red-600 text-white font-bold"
-        title="この投手を登板"
-      >
-        登板
-      </button>
+    <div className="space-y-1">
+      <div className="flex items-center gap-1.5 text-sm rounded px-1.5 py-1 bg-red-900/20 border border-red-800/30">
+        <span className="text-red-400 w-4 text-center text-xs shrink-0 font-bold">
+          P
+        </span>
+        <span className="text-red-400 text-xs w-12 shrink-0 text-center font-bold">
+          投
+        </span>
+        <input
+          className="bg-gray-700 text-white rounded px-2 py-1 text-xs flex-1 min-w-0"
+          placeholder="投手名"
+          value={player.name}
+          onChange={(e) => onChange({ ...player, name: e.target.value })}
+        />
+        <input
+          className="bg-gray-700 text-white rounded px-1 py-1 text-xs w-10 shrink-0"
+          placeholder="登板"
+          value={player.appearances || ''}
+          onChange={(e) => onChange({ ...player, appearances: e.target.value })}
+        />
+        <input
+          className="bg-gray-700 text-white rounded px-1 py-1 text-xs w-20 shrink-0"
+          placeholder="勝敗"
+          value={player.record || ''}
+          onChange={(e) => onChange({ ...player, record: e.target.value })}
+        />
+        <button
+          onClick={onSelect}
+          className="text-xs px-2 py-1 rounded shrink-0 bg-red-700 hover:bg-red-600 text-white font-bold"
+          title="この投手を登板"
+        >
+          登板
+        </button>
+      </div>
+      {/* 投手交代履歴 */}
+      {(archived.length > 0 || active) && (
+        <div className="text-[10px] text-gray-400 px-2 space-y-0.5">
+          {archived.map((p, i) => (
+            <div key={p.id} className="flex gap-2">
+              <span className="text-gray-500">{i === 0 ? '先発' : `${i}番手`}</span>
+              <span className="text-gray-300">{p.name}</span>
+              <span>{formatInningsPitched(p.outsRecorded)}回</span>
+              <span>{p.pitchCount}球</span>
+            </div>
+          ))}
+          {active && (
+            <div className="flex gap-2 text-green-400">
+              <span>{archived.length === 0 ? '先発' : `${archived.length}番手`}</span>
+              <span>{active.name}</span>
+              <span>{formatInningsPitched(active.outsRecorded)}回</span>
+              <span>{active.pitchCount}球</span>
+              <span className="animate-pulse">登板中</span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -255,6 +287,7 @@ function TeamLineupPanel({ side }: { side: 'away' | 'home' }) {
       {lineup[9] && (
         <PitcherRow
           player={lineup[9]}
+          side={side}
           onSelect={() => selectBatter(side, 9)}
           onChange={(p) => setLineupPlayer(side, 9, p)}
         />

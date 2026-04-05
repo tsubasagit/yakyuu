@@ -42,6 +42,28 @@ export interface InningScore {
   bottom: number | null
 }
 
+export interface PitcherAppearance {
+  id: string
+  name: string
+  number: string
+  record: string        // 勝敗 ("10勝5敗")
+  appearances: string   // 登板数
+  pitchCount: number
+  outsRecorded: number  // アウト取得数（投球回算出用）
+  enteredInning: number
+  enteredHalf: HalfInning
+  exitedInning: number | null   // null = 現在登板中
+  exitedHalf: HalfInning | null
+  isActive: boolean
+}
+
+/** アウト取得数から投球回表記を生成（例: 20 → "6.2" = 6回2/3） */
+export function formatInningsPitched(outsRecorded: number): string {
+  const full = Math.floor(outsRecorded / 3)
+  const remainder = outsRecorded % 3
+  return remainder === 0 ? `${full}` : `${full}.${remainder}`
+}
+
 export interface PlayLogEntry {
   id: string
   timestamp: number
@@ -89,6 +111,8 @@ export interface GameState {
   playLog: PlayLogEntry[]
   awayPitchCount: number
   homePitchCount: number
+  awayPitcherHistory: PitcherAppearance[]
+  homePitcherHistory: PitcherAppearance[]
   gameStartTime: number | null
   ticker: string
   activeEffect: EffectType
@@ -191,6 +215,8 @@ export const initialGameState: GameState = {
   playLog: [],
   awayPitchCount: 0,
   homePitchCount: 0,
+  awayPitcherHistory: [],
+  homePitcherHistory: [],
   gameStartTime: null,
   ticker: '',
   activeEffect: null,

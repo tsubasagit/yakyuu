@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { EffectType, GameState, HalfInning, LineupPlayer, MascotMode, OverlayPosition, PlayerInfo, Runners } from '../types'
+import type { EffectType, GameState, HalfInning, LineupPlayer, MascotMode, OverlayPosition, PitcherAppearance, PlayerInfo, Runners } from '../types'
 import { initialGameState, initialPlayerInfo, formatBatterStat, DEFAULT_OVERLAY_POSITIONS } from '../types'
 import { broadcastState } from '../lib/sync'
 import { backupToIDB, restoreFromIDB } from '../lib/idbBackup'
@@ -38,7 +38,8 @@ const DATA_KEYS: (keyof GameState)[] = [
   'awayErrors', 'homeErrors', 'count', 'runners',
   'batter', 'pitcher', 'awayLineup', 'homeLineup',
   'awayBatterIndex', 'homeBatterIndex', 'playLog',
-  'awayPitchCount', 'homePitchCount', 'gameStartTime', 'ticker', 'activeEffect', 'effectTimestamp',
+  'awayPitchCount', 'homePitchCount', 'awayPitcherHistory', 'homePitcherHistory',
+  'gameStartTime', 'ticker', 'activeEffect', 'effectTimestamp',
   'showMascot', 'mascotMode', 'mascotImages', 'autoChangeEffect', 'showWaitingScreen',
   'overlayPositions', 'overlayScale', 'lineupDisplayTeam',
 ]
@@ -57,6 +58,36 @@ function recalcTotals(state: GameState): GameState {
     homeTotal += inn.bottom ?? 0
   }
   return { ...state, awayTotal, homeTotal }
+}
+
+/** 現在守備中チームの投手履歴キーを取得 */
+function getDefendingHistKey(half: HalfInning): 'awayPitcherHistory' | 'homePitcherHistory' {
+  return half === 'top' ? 'homePitcherHistory' : 'awayPitcherHistory'
+}
+
+/** active pitcher のフィールドをインクリメントした新しい履歴配列を返す */
+function incrementActivePitcherField(
+  history: PitcherAppearance[],
+  field: 'pitchCount' | 'outsRecorded',
+): PitcherAppearance[] {
+  const updated = [...history]
+  const idx = updated.findIndex(p => p.isActive)
+  if (idx >= 0) {
+    updated[idx] = { ...updated[idx]!, [field]: updated[idx]![field] + 1 }
+  }
+  return updated
+}
+
+/** 投手履歴から active pitcher の PlayerInfo を取得 */
+function getActivePitcherInfo(history: PitcherAppearance[]): PlayerInfo | null {
+  const active = history.find(p => p.isActive)
+  if (!active) return null
+  return {
+    name: active.name,
+    number: active.number,
+    stat: active.record,
+    statLabel: active.appearances ? `${active.appearances}登板` : '',
+  }
 }
 
 interface GameActions {
@@ -118,34 +149,42 @@ export const useGameStore = create<GameStore>()(
       addBall: () =>
         set((s) => {
           const pitchKey = s.currentHalf === 'top' ? 'homePitchCount' : 'awayPitchCount'
+          const histKey = getDefendingHistKey(s.currentHalf)
+          const updatedHist = incrementActivePitcherField(s[histKey], 'pitchCount')
           const balls = s.count.balls + 1
           if (balls >= 4) {
-            return { ...applyWalk(s), [pitchKey]: s[pitchKey] + 1 }
+            return { ...applyWalk(s), [pitchKey]: s[pitchKey] + 1, [histKey]: updatedHist }
           }
-          return { count: { ...s.count, balls }, [pitchKey]: s[pitchKey] + 1 }
+          return { count: { ...s.count, balls }, [pitchKey]: s[pitchKey] + 1, [histKey]: updatedHist }
         }),
 
       addStrike: () =>
         set((s) => {
           const pitchKey = s.currentHalf === 'top' ? 'homePitchCount' : 'awayPitchCount'
+          const histKey = getDefendingHistKey(s.currentHalf)
+          let updatedHist = incrementActivePitcherField(s[histKey], 'pitchCount')
           const strikes = s.count.strikes + 1
           if (strikes >= 3) {
+            // 三振 → アウト: outsRecorded もインクリメント
+            updatedHist = incrementActivePitcherField(updatedHist, 'outsRecorded')
             const outs = s.count.outs + 1
             if (outs >= 3) {
-              return { ...advanceInningPatch(s), [pitchKey]: s[pitchKey] + 1 }
+              return { ...advanceInningPatch(s), [pitchKey]: s[pitchKey] + 1, [histKey]: updatedHist }
             }
-            return { count: { balls: 0, strikes: 0, outs }, [pitchKey]: s[pitchKey] + 1 }
+            return { count: { balls: 0, strikes: 0, outs }, [pitchKey]: s[pitchKey] + 1, [histKey]: updatedHist }
           }
-          return { count: { ...s.count, strikes }, [pitchKey]: s[pitchKey] + 1 }
+          return { count: { ...s.count, strikes }, [pitchKey]: s[pitchKey] + 1, [histKey]: updatedHist }
         }),
 
       addOut: () =>
         set((s) => {
+          const histKey = getDefendingHistKey(s.currentHalf)
+          const updatedHist = incrementActivePitcherField(s[histKey], 'outsRecorded')
           const outs = s.count.outs + 1
           if (outs >= 3) {
-            return advanceInningPatch(s)
+            return { ...advanceInningPatch(s), [histKey]: updatedHist }
           }
-          return { count: { balls: 0, strikes: 0, outs } }
+          return { count: { balls: 0, strikes: 0, outs }, [histKey]: updatedHist }
         }),
 
       resetCount: () =>
@@ -222,9 +261,54 @@ export const useGameStore = create<GameStore>()(
           const player = s[key][index]
           if (!player) return s
 
-          // 10番目（index 9）は投手 → 投手として登録
+          // 10番目（index 9）は投手 → 投手交代（履歴付き）
           if (index === 9) {
+            const histKey = team === 'away' ? 'awayPitcherHistory' as const : 'homePitcherHistory' as const
+            const pitchCountKey = team === 'away' ? 'awayPitchCount' as const : 'homePitchCount' as const
+            const history = [...s[histKey]]
+
+            // 同じ投手の場合は表示更新のみ（アピアランス重複防止）
+            const activeIdx = history.findIndex(p => p.isActive)
+            if (activeIdx >= 0 && history[activeIdx]!.name === player.name && history[activeIdx]!.number === player.number) {
+              return {
+                pitcher: {
+                  name: player.name,
+                  number: player.number,
+                  stat: player.record || '',
+                  statLabel: player.appearances ? `${player.appearances}登板` : '',
+                },
+              }
+            }
+
+            // 現在のアクティブ投手をアーカイブ
+            if (activeIdx >= 0) {
+              history[activeIdx] = {
+                ...history[activeIdx]!,
+                isActive: false,
+                exitedInning: s.currentInning,
+                exitedHalf: s.currentHalf,
+              }
+            }
+
+            // 新投手のアピアランスを作成
+            history.push({
+              id: crypto.randomUUID(),
+              name: player.name,
+              number: player.number,
+              record: player.record || '',
+              appearances: player.appearances || '',
+              pitchCount: 0,
+              outsRecorded: 0,
+              enteredInning: s.currentInning,
+              enteredHalf: s.currentHalf,
+              exitedInning: null,
+              exitedHalf: null,
+              isActive: true,
+            })
+
             return {
+              [histKey]: history,
+              [pitchCountKey]: 0,
               pitcher: {
                 name: player.name,
                 number: player.number,
@@ -350,12 +434,20 @@ export const useGameStore = create<GameStore>()(
 
       addPitch: () => set((s) => {
         const pitchKey = s.currentHalf === 'top' ? 'homePitchCount' : 'awayPitchCount'
-        return { [pitchKey]: s[pitchKey] + 1 }
+        const histKey = getDefendingHistKey(s.currentHalf)
+        const updatedHist = incrementActivePitcherField(s[histKey], 'pitchCount')
+        return { [pitchKey]: s[pitchKey] + 1, [histKey]: updatedHist }
       }),
 
       setPitchCount: (n) => set((s) => {
         const pitchKey = s.currentHalf === 'top' ? 'homePitchCount' : 'awayPitchCount'
-        return { [pitchKey]: n }
+        const histKey = getDefendingHistKey(s.currentHalf)
+        const history = [...s[histKey]]
+        const idx = history.findIndex(p => p.isActive)
+        if (idx >= 0) {
+          history[idx] = { ...history[idx]!, pitchCount: n }
+        }
+        return { [pitchKey]: n, [histKey]: history }
       }),
 
       startGameTimer: () => set({ gameStartTime: Date.now(), showWaitingScreen: false }),
@@ -388,20 +480,25 @@ export const useGameStore = create<GameStore>()(
 
       rewindInning: () =>
         set((s) => {
-          if (s.currentHalf === 'bottom') {
-            return {
-              currentHalf: 'top' as const,
-              count: { balls: 0, strikes: 0, outs: 0 },
-              runners: { first: false, second: false, third: false },
-            }
-          }
-          if (s.currentInning <= 1) return s
-          return {
-            currentInning: s.currentInning - 1,
-            currentHalf: 'bottom' as const,
+          const base: Partial<GameState> = {
             count: { balls: 0, strikes: 0, outs: 0 },
             runners: { first: false, second: false, third: false },
           }
+          if (s.currentHalf === 'bottom') {
+            // 裏→表: 後攻が守備に入る → 後攻の active pitcher を表示
+            const homeActive = getActivePitcherInfo(s.homePitcherHistory)
+            if (homeActive) base.pitcher = homeActive
+            const hp = s.homePitcherHistory.find(p => p.isActive)
+            if (hp) base.homePitchCount = hp.pitchCount
+            return { ...base, currentHalf: 'top' as const }
+          }
+          if (s.currentInning <= 1) return s
+          // 表→前回裏: 先攻が守備に入る → 先攻の active pitcher を表示
+          const awayActive = getActivePitcherInfo(s.awayPitcherHistory)
+          if (awayActive) base.pitcher = awayActive
+          const ap = s.awayPitcherHistory.find(p => p.isActive)
+          if (ap) base.awayPitchCount = ap.pitchCount
+          return { ...base, currentInning: s.currentInning - 1, currentHalf: 'bottom' as const }
         }),
 
       setShowMascot: (show) => set({ showMascot: show }),
@@ -566,14 +663,25 @@ function advanceInningPatch(s: GameState): Partial<GameState> {
   }
 
   if (s.currentHalf === 'top') {
+    // 表→裏: 先攻が守備に入る → 先攻の active pitcher を表示
+    const awayActive = getActivePitcherInfo(s.awayPitcherHistory)
+    if (awayActive) resetState.pitcher = awayActive
+    const ap = s.awayPitcherHistory.find(p => p.isActive)
+    if (ap) resetState.awayPitchCount = ap.pitchCount
     return { ...resetState, currentHalf: 'bottom' as const }
   }
 
+  // 裏→次回表: 後攻が守備に入る → 後攻の active pitcher を表示
   const nextInning = s.currentInning + 1
   const innings = [...s.innings]
   if (!innings.find((inn) => inn.inning === nextInning)) {
     innings.push({ inning: nextInning, top: null, bottom: null })
   }
+
+  const homeActive = getActivePitcherInfo(s.homePitcherHistory)
+  if (homeActive) resetState.pitcher = homeActive
+  const hp = s.homePitcherHistory.find(p => p.isActive)
+  if (hp) resetState.homePitchCount = hp.pitchCount
 
   return {
     ...resetState,

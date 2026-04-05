@@ -13,6 +13,7 @@ export default function CountControl() {
   const awayPitchCount = useGameStore((s) => s.awayPitchCount)
   const homePitchCount = useGameStore((s) => s.homePitchCount)
   const setPitchCount = useGameStore((s) => s.setPitchCount)
+  const pitcher = useGameStore((s) => s.pitcher)
   const pitchCount = currentHalf === 'top' ? homePitchCount : awayPitchCount
 
   return (
@@ -98,7 +99,7 @@ export default function CountControl() {
 
       {/* 球数 */}
       <div className="flex items-center gap-3 pt-2 border-t border-gray-700">
-        <span className="text-gray-400 text-sm">投球数{currentHalf === 'top' ? '(後攻)' : '(先攻)'}</span>
+        <span className="text-gray-400 text-sm">投球数{pitcher.name ? ` ${pitcher.name}` : currentHalf === 'top' ? '(後攻)' : '(先攻)'}</span>
         <span className="text-white font-mono text-xl font-bold">{pitchCount}</span>
         <button
           onClick={() => setPitchCount(Math.max(0, pitchCount - 1))}

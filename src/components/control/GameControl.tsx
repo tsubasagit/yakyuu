@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
+import { extractGameState } from '../../store/useGameStore'
+import { generateGameRecordHTML } from '../../lib/gameRecordExport'
 
 export default function GameControl() {
   const awayTeam = useGameStore((s) => s.awayTeam)
@@ -55,6 +57,18 @@ export default function GameControl() {
     if (confirm('新しい試合を開始しますか？全データがリセットされます。')) {
       newGame()
     }
+  }
+
+  const handleExportRecord = () => {
+    const state = extractGameState(useGameStore.getState())
+    const html = generateGameRecordHTML(state)
+    const blob = new Blob([html], { type: 'text/html; charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `試合記録_${awayTeam.name}_vs_${homeTeam.name}_${new Date().toISOString().slice(0, 10)}.html`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -126,6 +140,12 @@ export default function GameControl() {
           className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded text-sm font-bold"
         >
           新規試合
+        </button>
+        <button
+          onClick={handleExportRecord}
+          className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded text-sm font-bold"
+        >
+          試合記録
         </button>
       </div>
 
