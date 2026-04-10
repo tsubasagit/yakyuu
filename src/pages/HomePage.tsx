@@ -55,28 +55,32 @@ export default function HomePage() {
         <div className="mb-12">
           <h2 className="text-xl font-bold mb-4 border-b border-slate-700 pb-2">OBS セットアップ</h2>
           <div className="space-y-4 text-sm">
+            <a
+              href="guide.html"
+              className="block bg-[#538bb0]/10 hover:bg-[#538bb0]/20 border-2 border-[#538bb0] rounded-xl p-5 transition-colors text-center"
+            >
+              <span className="text-[#538bb0] font-bold text-lg block mb-1">OBS セットアップガイド</span>
+              <span className="text-slate-400 text-sm">スクリーンショット・操作デモ動画付きの詳細ガイド →</span>
+            </a>
             <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
-              <h3 className="font-bold text-yellow-400 mb-2">Step 1: オーバーレイを追加</h3>
+              <h3 className="font-bold text-[#538bb0] mb-2">Step 1: カスタムドックを追加（コントロール画面）</h3>
+              <p className="text-slate-300 mb-2">OBSメニュー「<strong className="text-white">ドック</strong>」→「<strong className="text-white">カスタムブラウザドック</strong>」で以下を設定：</p>
+              <ul className="text-slate-400 space-y-1 ml-4">
+                <li>- ドック名: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-xs text-slate-200">yakyuu</code></li>
+                <li>- URL: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-xs text-slate-200">{window.location.origin + window.location.pathname}#/control</code></li>
+              </ul>
+            </div>
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
+              <h3 className="font-bold text-yellow-400 mb-2">Step 2: ブラウザソースを追加（オーバーレイ）</h3>
               <p className="text-slate-300 mb-2">OBSの「ソース」→「ブラウザ」で以下を設定：</p>
               <ul className="text-slate-400 space-y-1 ml-4">
                 <li>- URL: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-xs text-slate-200">{window.location.origin + window.location.pathname}#/overlay</code></li>
                 <li>- 幅: <strong className="text-white">1920</strong>　高さ: <strong className="text-white">1080</strong></li>
-                <li>- 「表示されていないときにソースをシャットダウン」→ <strong className="text-red-400">OFF</strong></li>
+                <li>- カスタムCSS: <strong className="text-red-400">空欄にする</strong>（デフォルトCSSを削除）</li>
               </ul>
             </div>
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
-              <h3 className="font-bold text-[#538bb0] mb-2">Step 2: コントロールパネルを追加</h3>
-              <p className="text-slate-300 mb-2">OBSメニュー「<strong className="text-white">ドック</strong>」→「<strong className="text-white">カスタムブラウザドック</strong>」で以下を設定：</p>
-              <ul className="text-slate-400 space-y-1 ml-4">
-                <li>- ドック名: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-xs text-slate-200">yakyuu コントロール</code></li>
-                <li>- URL: <code className="bg-slate-700 px-1.5 py-0.5 rounded text-xs text-slate-200">{window.location.origin + window.location.pathname}#/control</code></li>
-              </ul>
-              <p className="text-yellow-400/80 text-xs mt-2">
-                ※ カスタムドックとブラウザソースはOBS内で同じブラウザエンジンを共有するため、リアルタイム同期が可能です
-              </p>
-            </div>
-            <p className="text-slate-500 text-xs">
-              ※ 通常のブラウザ（Chrome等）で開いたコントロールパネルはOBSブラウザソースと同期できません。必ずOBSのカスタムドックをご利用ください。
+            <p className="text-yellow-400/80 text-xs">
+              ※ カスタムドックとブラウザソースはOBS内で同じブラウザエンジン（CEF）を共有するため、リアルタイム同期が可能です。Chrome等の外部ブラウザとは同期できません。
             </p>
           </div>
         </div>
@@ -90,24 +94,6 @@ export default function HomePage() {
                 {tech}
               </span>
             ))}
-          </div>
-        </div>
-
-        {/* OBS ウインドウキャプチャ利用ガイド */}
-        <div className="mb-12">
-          <h2 className="text-xl font-bold mb-4 border-b border-slate-700 pb-2">OBS ウインドウキャプチャで使う</h2>
-          <div className="bg-slate-800 border border-emerald-700/50 rounded-lg p-4 text-sm">
-            <p className="text-emerald-400 font-bold mb-2">v0.2.0 推奨の使い方</p>
-            <p className="text-slate-300 mb-3">
-              ブラウザ（Chrome等）でオーバーレイを開き、OBSの「ウインドウキャプチャ」で以下のパネルを個別にキャプチャすると安定して利用できます。
-            </p>
-            <ul className="text-slate-400 space-y-1 ml-4">
-              <li>- <strong className="text-white">得点スコア</strong>（スコアボードパネル）</li>
-              <li>- <strong className="text-white">打順・選手</strong>（ラインナップカード）</li>
-            </ul>
-            <p className="text-slate-500 text-xs mt-3">
-              ※ OBSの「クロップ/パッド」フィルタで必要な領域だけ切り出すと綺麗に配置できます
-            </p>
           </div>
         </div>
 
