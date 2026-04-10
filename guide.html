@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>yakyuu — OBS セットアップガイド</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      line-height: 1.7;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #538bb0;
+      margin-bottom: 0.5rem;
+    }
+    .subtitle {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+    .badge {
+      display: inline-block;
+      background: #538bb0;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-right: 0.3rem;
+    }
+    .prereq {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 1.2rem;
+      margin-bottom: 2rem;
+    }
+    .prereq h2 {
+      font-size: 1rem;
+      color: #f8fafc;
+      margin-bottom: 0.5rem;
+    }
+    .prereq ul {
+      list-style: none;
+      padding: 0;
+    }
+    .prereq li {
+      padding: 0.3rem 0;
+      color: #cbd5e1;
+      font-size: 0.9rem;
+    }
+    .prereq li::before {
+      content: '✓ ';
+      color: #22c55e;
+      font-weight: bold;
+    }
+    .step {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .step-number {
+      background: #538bb0;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: bold;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .step h2 {
+      font-size: 1.15rem;
+      color: #f8fafc;
+    }
+    .step p, .step li {
+      color: #cbd5e1;
+      font-size: 0.9rem;
+    }
+    .step ol {
+      padding-left: 1.2rem;
+      margin: 0.5rem 0;
+    }
+    .step li {
+      padding: 0.25rem 0;
+    }
+    .url-box {
+      background: #0f172a;
+      border: 1px solid #538bb0;
+      border-radius: 6px;
+      padding: 0.6rem 1rem;
+      font-family: 'Consolas', 'SF Mono', monospace;
+      font-size: 0.85rem;
+      color: #7dd3fc;
+      margin: 0.5rem 0;
+      word-break: break-all;
+      user-select: all;
+    }
+    .screenshot {
+      margin: 1rem 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #334155;
+    }
+    .screenshot img {
+      width: 100%;
+      display: block;
+    }
+    .screenshot figcaption {
+      background: #334155;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      padding: 0.4rem 0.8rem;
+      text-align: center;
+    }
+    .warning {
+      background: #422006;
+      border: 1px solid #a16207;
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      margin: 0.8rem 0;
+      font-size: 0.85rem;
+      color: #fde68a;
+    }
+    .warning::before {
+      content: '⚠ ';
+    }
+    .tip {
+      background: #052e16;
+      border: 1px solid #15803d;
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      margin: 0.8rem 0;
+      font-size: 0.85rem;
+      color: #bbf7d0;
+    }
+    .tip::before {
+      content: '💡 ';
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      color: #538bb0;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8rem 0;
+      font-size: 0.85rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.5rem 0.8rem;
+      border-bottom: 1px solid #334155;
+    }
+    th {
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    td {
+      color: #cbd5e1;
+    }
+    code {
+      background: #0f172a;
+      color: #7dd3fc;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.85em;
+    }
+    footer {
+      text-align: center;
+      color: #475569;
+      font-size: 0.8rem;
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #1e293b;
+    }
+    footer a {
+      color: #538bb0;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="./" class="back-link">&larr; yakyuu トップへ戻る</a>
+
+    <h1>OBS セットアップガイド</h1>
+    <p class="subtitle">
+      <span class="badge">OBS Custom Dock</span>
+      <span class="badge">Browser Source</span>
+      yakyuu スコアボードオーバーレイを OBS Studio で使用するための設定手順
+    </p>
+
+    <!-- 前提条件 -->
+    <div class="prereq">
+      <h2>前提条件</h2>
+      <ul>
+        <li>OBS Studio v28 以降（カスタムドック機能が必要）</li>
+        <li>Windows / macOS / Linux 対応 — <a href="https://obsproject.com/download" style="color:#7dd3fc;">公式ダウンロード</a></li>
+        <li>ARM 版 Windows もv31.1以降で対応</li>
+      </ul>
+    </div>
+
+    <!-- 構成説明 -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-number" style="background:#64748b;">i</div>
+        <h2>yakyuu の構成</h2>
+      </div>
+      <p>yakyuu は2つの画面で構成されています。</p>
+      <table>
+        <tr>
+          <th>画面</th>
+          <th>用途</th>
+          <th>OBS での表示方法</th>
+        </tr>
+        <tr>
+          <td><strong>コントロール</strong></td>
+          <td>スコア入力・操作パネル</td>
+          <td>カスタムドック</td>
+        </tr>
+        <tr>
+          <td><strong>オーバーレイ</strong></td>
+          <td>透過スコアボード表示</td>
+          <td>ブラウザソース</td>
+        </tr>
+      </table>
+      <div class="tip">
+        カスタムドックとブラウザソースは OBS 内部で同じブラウザエンジンを共有しているため、リアルタイム同期が可能です。Chrome 等の外部ブラウザとは同期できません。
+      </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-number">1</div>
+        <h2>カスタムドックを追加（コントロール画面）</h2>
+      </div>
+      <ol>
+        <li>OBS メニューバー → <strong>「ドック」</strong> → <strong>「カスタムブラウザドック」</strong></li>
+        <li>以下を入力して <strong>「適用」</strong> をクリック</li>
+      </ol>
+      <table>
+        <tr><th>項目</th><th>値</th></tr>
+        <tr><td>ドック名</td><td><code>yakyuu</code></td></tr>
+        <tr><td>URL</td><td style="word-break:break-all;"><code>https://tsubasagit.github.io/yakyuu/#/control</code></td></tr>
+      </table>
+      <figure class="screenshot">
+        <img src="images/step1_custom_dock.png" alt="カスタムブラウザドック設定画面" />
+        <figcaption>ドック → カスタムブラウザドック でURLを設定</figcaption>
+      </figure>
+      <p>OBS 画面内にコントロールパネルが表示されます。</p>
+      <figure class="screenshot">
+        <img src="images/step2_dock_result.png" alt="コントロールパネル表示結果" />
+        <figcaption>カスタムドックにコントロールパネルが表示された状態</figcaption>
+      </figure>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-number">2</div>
+        <h2>ブラウザソースを追加（オーバーレイ）</h2>
+      </div>
+      <ol>
+        <li>画面下部の <strong>「ソース」</strong> の <strong>「+」</strong> ボタンをクリック</li>
+        <li><strong>「ブラウザ」</strong> を選択</li>
+        <li>名前を入力（例: <code>yakyuu overlay</code>）して「OK」</li>
+        <li>プロパティ画面で以下を設定</li>
+      </ol>
+      <table>
+        <tr><th>項目</th><th>値</th></tr>
+        <tr><td>URL</td><td style="word-break:break-all;"><code>https://tsubasagit.github.io/yakyuu/#/overlay</code></td></tr>
+        <tr><td>幅</td><td><code>1920</code></td></tr>
+        <tr><td>高さ</td><td><code>1080</code></td></tr>
+        <tr><td>カスタムCSS</td><td><strong>中身を全て削除して空欄にする</strong></td></tr>
+      </table>
+      <figure class="screenshot">
+        <img src="images/step3_browser_source.png" alt="ブラウザソースのプロパティ設定" />
+        <figcaption>ブラウザソースのプロパティ — URL・サイズ・カスタムCSSを設定</figcaption>
+      </figure>
+      <div class="warning">
+        URL に <code>#</code>（ハッシュ）が含まれています。<code>/#/overlay</code> の部分を省略しないでください。
+      </div>
+      <div class="warning">
+        カスタムCSS はデフォルトで <code>body { background-color: rgba... }</code> が入っています。これを削除しないと背景が正しく透過されません。
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-number">3</div>
+        <h2>接続を確認</h2>
+      </div>
+      <p>設定が正しければ、以下の状態になります。</p>
+      <ol>
+        <li>カスタムドック右上の接続ステータスが <strong style="color:#4ade80;">「オーバーレイ接続中」（緑）</strong> に変わる</li>
+        <li>プレビュー画面にスコアボード・打順カード等のオーバーレイが表示される</li>
+        <li>カスタムドックで操作するとオーバーレイにリアルタイム反映される</li>
+      </ol>
+      <figure class="screenshot">
+        <img src="images/step4_connected.png" alt="オーバーレイ接続済み" />
+        <figcaption>接続成功 — コントロールドック（右）とオーバーレイ（中央）が同期</figcaption>
+      </figure>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-number">4</div>
+        <h2>画面に合わせる</h2>
+      </div>
+      <p>ブラウザソースのサイズが画面と合わない場合:</p>
+      <ol>
+        <li>プレビュー画面のオーバーレイ（赤枠）を <strong>右クリック</strong></li>
+        <li><strong>「変換」</strong> → <strong>「画面に合わせる」</strong></li>
+      </ol>
+      <figure class="screenshot">
+        <img src="images/step5_complete.png" alt="完成画面" />
+        <figcaption>オーバーレイが配信画面に重なった完成状態</figcaption>
+      </figure>
+    </div>
+
+    <!-- パネル配置 -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-number">5</div>
+        <h2>パネルの位置・サイズを調整</h2>
+      </div>
+      <p>OBS のブラウザソース内ではパネルをドラッグできないため、コントロールパネルから数値で調整します。</p>
+      <ol>
+        <li>カスタムドックのコントロール画面を下にスクロール</li>
+        <li><strong>「パネルサイズ調整」</strong> セクションを探す</li>
+        <li><strong>「全体」</strong> スライダーで全パネルの拡大率を変更</li>
+        <li><strong>「個別パネル設定」</strong> を展開して、各パネルの X/Y 座標と倍率を調整</li>
+      </ol>
+      <table>
+        <tr><th>パネル</th><th>デフォルト位置</th><th>説明</th></tr>
+        <tr><td>スコアボード</td><td>X:24 Y:24</td><td>BSO・走者・球数</td></tr>
+        <tr><td>タイマー</td><td>X:24 Y:160</td><td>試合経過時間</td></tr>
+        <tr><td>打順カード</td><td>X:1420 Y:24</td><td>両チーム打順</td></tr>
+        <tr><td>選手情報</td><td>X:24 Y:1020</td><td>打者・投手情報</td></tr>
+        <tr><td>経過ログ</td><td>X:1560 Y:800</td><td>プレーバイプレー</td></tr>
+        <tr><td>マスコット</td><td>X:1740 Y:900</td><td>チームマスコット</td></tr>
+      </table>
+      <div class="tip">
+        「全リセット」ボタンで全パネルをデフォルト位置に戻せます。
+      </div>
+    </div>
+
+    <!-- トラブルシューティング -->
+    <div class="step">
+      <div class="step-header">
+        <div class="step-number" style="background:#ef4444;">!</div>
+        <h2>トラブルシューティング</h2>
+      </div>
+      <table>
+        <tr><th>症状</th><th>対処法</th></tr>
+        <tr>
+          <td>「オーバーレイ未接続」のまま</td>
+          <td>ブラウザソースの URL に <code>#</code> が入っているか確認。カスタムドックを右クリック→再読み込み</td>
+        </tr>
+        <tr>
+          <td>背景が透過されない</td>
+          <td>ブラウザソースのプロパティで「カスタムCSS」を空欄にする</td>
+        </tr>
+        <tr>
+          <td>オーバーレイがはみ出る</td>
+          <td>オーバーレイを右クリック →「変換」→「画面に合わせる」</td>
+        </tr>
+        <tr>
+          <td>Chrome で操作しても OBS に反映されない</td>
+          <td>Chrome と OBS は別ブラウザのため同期不可。必ず OBS カスタムドックから操作してください</td>
+        </tr>
+        <tr>
+          <td>パネルの位置を変えたい</td>
+          <td>コントロールパネル下部の「パネルサイズ調整」→「個別パネル設定」から X/Y/倍率を変更</td>
+        </tr>
+      </table>
+    </div>
+
+    <footer>
+      <p>yakyuu — 野球中継スコアボードオーバーレイ</p>
+      <p><a href="https://github.com/tsubasagit/yakyuu">GitHub</a> | <a href="./#/control">コントロール</a> | <a href="./#/overlay">オーバーレイ</a></p>
+      <p>&copy; AppTalentHub Inc.</p>
+    </footer>
+  </div>
+</body>
+</html>
