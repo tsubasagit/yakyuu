@@ -85,6 +85,7 @@ export interface Team {
 export interface OverlayPosition {
   x: number
   y: number
+  scale?: number
 }
 
 export interface GameState {

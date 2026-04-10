@@ -157,6 +157,7 @@ export default function OverlayPage() {
   }, [])
   const scale = useViewportScale()
   const overlayScale = useGameStore((s) => s.overlayScale ?? 1)
+  const positions = useGameStore((s) => s.overlayPositions)
 
   // オーバーレイページでのみスクロールを無効化
   useEffect(() => {
@@ -175,27 +176,27 @@ export default function OverlayPage() {
       className="relative select-none pointer-events-none"
     >
       {/* スコアボード（BSO・走者・球数 統合） — 左上 */}
-      <DraggableBox id="scoreboard" scale={overlayScale}>
+      <DraggableBox id="scoreboard" scale={overlayScale * (positions?.scoreboard?.scale ?? 1)}>
         <Scoreboard />
       </DraggableBox>
 
       {/* 経過時間 */}
-      <DraggableBox id="timer" scale={overlayScale}>
+      <DraggableBox id="timer" scale={overlayScale * (positions?.timer?.scale ?? 1)}>
         <GameTimer />
       </DraggableBox>
 
       {/* 両チーム打順 — 右上 */}
-      <DraggableBox id="lineup" scale={overlayScale}>
+      <DraggableBox id="lineup" scale={overlayScale * (positions?.lineup?.scale ?? 1)}>
         <LineupCard />
       </DraggableBox>
 
       {/* 選手情報 — 左下 */}
-      <DraggableBox id="playerInfo" scale={overlayScale}>
+      <DraggableBox id="playerInfo" scale={overlayScale * (positions?.playerInfo?.scale ?? 1)}>
         <PlayerInfo />
       </DraggableBox>
 
       {/* 経過ログ — 右下 */}
-      <DraggableBox id="playLog" scale={overlayScale}>
+      <DraggableBox id="playLog" scale={overlayScale * (positions?.playLog?.scale ?? 1)}>
         <PlayLog />
       </DraggableBox>
 

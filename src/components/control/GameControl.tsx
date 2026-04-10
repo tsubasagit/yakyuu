@@ -1,7 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { extractGameState } from '../../store/useGameStore'
 import { generateGameRecordHTML } from '../../lib/gameRecordExport'
+import type { OverlayPosition } from '../../types'
+import { DEFAULT_OVERLAY_POSITIONS } from '../../types'
+
+const PANEL_LABELS: Record<string, string> = {
+  scoreboard: 'スコアボード',
+  timer: 'タイマー',
+  lineup: '打順カード',
+  playerInfo: '選手情報',
+  playLog: '経過ログ',
+  mascot: 'マスコット',
+}
+
+const PANEL_IDS = Object.keys(PANEL_LABELS)
 
 export default function GameControl() {
   const awayTeam = useGameStore((s) => s.awayTeam)
@@ -19,6 +32,16 @@ export default function GameControl() {
   const resetOverlayPositions = useGameStore((s) => s.resetOverlayPositions)
   const overlayScale = useGameStore((s) => s.overlayScale ?? 1)
   const setOverlayScale = useGameStore((s) => s.setOverlayScale)
+  const overlayPositions = useGameStore((s) => s.overlayPositions)
+  const setOverlayPosition = useGameStore((s) => s.setOverlayPosition)
+  const [panelOpen, setPanelOpen] = useState(false)
+
+  const updatePanelField = useCallback(
+    (id: string, field: keyof OverlayPosition, value: number) => {
+      setOverlayPosition(id, { [field]: value })
+    },
+    [setOverlayPosition],
+  )
 
   // ローカル state（スムーズな入力用）
   const [awayName, setAwayName] = useState(awayTeam.name)
@@ -193,7 +216,7 @@ export default function GameControl() {
       {/* オーバーレイ パネルサイズ・位置 */}
       <div className="space-y-2 pt-2 border-t border-gray-700">
         <div className="flex items-center gap-3">
-          <span className="text-gray-400 text-sm whitespace-nowrap">パネルサイズ</span>
+          <span className="text-gray-400 text-sm whitespace-nowrap">全体サイズ</span>
           <input
             type="range"
             min="0.5"
@@ -214,14 +237,62 @@ export default function GameControl() {
           </button>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-gray-400 text-sm">パネル配置</span>
+          <button
+            onClick={() => setPanelOpen(!panelOpen)}
+            className="text-gray-400 text-sm hover:text-white flex items-center gap-1 cursor-pointer"
+          >
+            <span className="text-xs">{panelOpen ? '▼' : '▶'}</span>
+            パネル配置
+          </button>
           <button
             onClick={resetOverlayPositions}
             className="bg-gray-600 hover:bg-gray-500 text-gray-300 px-3 py-1.5 rounded text-xs font-bold"
           >
-            位置をリセット
+            全リセット
           </button>
         </div>
+        {panelOpen && (
+          <div className="space-y-2 pl-1">
+            {PANEL_IDS.map((id) => {
+              const pos = overlayPositions?.[id]
+              const def = DEFAULT_OVERLAY_POSITIONS[id] ?? { x: 0, y: 0 }
+              const x = pos?.x ?? def.x
+              const y = pos?.y ?? def.y
+              const sc = pos?.scale ?? 1
+              return (
+                <div key={id} className="space-y-1">
+                  <span className="text-gray-300 text-xs font-bold">{PANEL_LABELS[id]}</span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <label className="text-gray-500 text-[10px]">X</label>
+                    <input
+                      type="number"
+                      value={x}
+                      onChange={(e) => updatePanelField(id, 'x', parseInt(e.target.value) || 0)}
+                      className="w-16 bg-gray-700 text-white rounded px-1.5 py-1 text-xs font-mono text-right"
+                    />
+                    <label className="text-gray-500 text-[10px]">Y</label>
+                    <input
+                      type="number"
+                      value={y}
+                      onChange={(e) => updatePanelField(id, 'y', parseInt(e.target.value) || 0)}
+                      className="w-16 bg-gray-700 text-white rounded px-1.5 py-1 text-xs font-mono text-right"
+                    />
+                    <label className="text-gray-500 text-[10px]">倍率</label>
+                    <input
+                      type="number"
+                      min="0.1"
+                      max="5"
+                      step="0.1"
+                      value={sc}
+                      onChange={(e) => updatePanelField(id, 'scale', parseFloat(e.target.value) || 1)}
+                      className="w-14 bg-gray-700 text-white rounded px-1.5 py-1 text-xs font-mono text-right"
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {isGameOver && (

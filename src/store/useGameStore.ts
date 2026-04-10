@@ -134,7 +134,7 @@ interface GameActions {
   setMascotImage: (mode: string, dataUrl: string | null) => void
   setAutoChangeEffect: (on: boolean) => void
   setShowWaitingScreen: (show: boolean) => void
-  setOverlayPosition: (id: string, pos: OverlayPosition) => void
+  setOverlayPosition: (id: string, pos: Partial<OverlayPosition>) => void
   resetOverlayPositions: () => void
   setOverlayScale: (scale: number) => void
   setLineupDisplayTeam: (team: 'away' | 'home') => void
@@ -548,7 +548,10 @@ export const useGameStore = create<GameStore>()(
 
       setOverlayPosition: (id, pos) =>
         set((s) => ({
-          overlayPositions: { ...s.overlayPositions, [id]: pos },
+          overlayPositions: {
+            ...s.overlayPositions,
+            [id]: { ...(s.overlayPositions?.[id] ?? { x: 0, y: 0 }), ...pos },
+          },
         })),
 
       resetOverlayPositions: () =>
