@@ -213,10 +213,12 @@ export default function GameControl() {
         )}
       </div>
 
-      {/* オーバーレイ パネルサイズ・位置 */}
-      <div className="space-y-2 pt-2 border-t border-gray-700">
+      {/* パネルサイズ調整 */}
+      <div className="bg-gray-700/50 rounded-lg p-3 space-y-3 border border-accent/30">
+        <h3 className="text-accent font-bold text-sm">パネルサイズ調整</h3>
+
         <div className="flex items-center gap-3">
-          <span className="text-gray-400 text-sm whitespace-nowrap">全体サイズ</span>
+          <span className="text-white text-xs font-bold whitespace-nowrap">全体</span>
           <input
             type="range"
             min="0.5"
@@ -236,13 +238,14 @@ export default function GameControl() {
             1x
           </button>
         </div>
-        <div className="flex items-center gap-3">
+
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setPanelOpen(!panelOpen)}
-            className="text-gray-400 text-sm hover:text-white flex items-center gap-1 cursor-pointer"
+            className="bg-accent/20 hover:bg-accent/30 text-accent text-xs font-bold px-3 py-1.5 rounded flex items-center gap-1"
           >
-            <span className="text-xs">{panelOpen ? '▼' : '▶'}</span>
-            パネル配置
+            <span>{panelOpen ? '▼' : '▶'}</span>
+            個別パネル設定
           </button>
           <button
             onClick={resetOverlayPositions}
@@ -251,8 +254,9 @@ export default function GameControl() {
             全リセット
           </button>
         </div>
+
         {panelOpen && (
-          <div className="space-y-2 pl-1">
+          <div className="space-y-2 bg-gray-800/50 rounded p-2">
             {PANEL_IDS.map((id) => {
               const pos = overlayPositions?.[id]
               const def = DEFAULT_OVERLAY_POSITIONS[id] ?? { x: 0, y: 0 }
@@ -260,24 +264,24 @@ export default function GameControl() {
               const y = pos?.y ?? def.y
               const sc = pos?.scale ?? 1
               return (
-                <div key={id} className="space-y-1">
-                  <span className="text-gray-300 text-xs font-bold">{PANEL_LABELS[id]}</span>
+                <div key={id} className="space-y-1 border-b border-gray-700/50 pb-2 last:border-0 last:pb-0">
+                  <span className="text-accent text-xs font-bold">{PANEL_LABELS[id]}</span>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <label className="text-gray-500 text-[10px]">X</label>
+                    <label className="text-gray-400 text-[10px] font-bold">X</label>
                     <input
                       type="number"
                       value={x}
                       onChange={(e) => updatePanelField(id, 'x', parseInt(e.target.value) || 0)}
                       className="w-16 bg-gray-700 text-white rounded px-1.5 py-1 text-xs font-mono text-right"
                     />
-                    <label className="text-gray-500 text-[10px]">Y</label>
+                    <label className="text-gray-400 text-[10px] font-bold">Y</label>
                     <input
                       type="number"
                       value={y}
                       onChange={(e) => updatePanelField(id, 'y', parseInt(e.target.value) || 0)}
                       className="w-16 bg-gray-700 text-white rounded px-1.5 py-1 text-xs font-mono text-right"
                     />
-                    <label className="text-gray-500 text-[10px]">倍率</label>
+                    <label className="text-gray-400 text-[10px] font-bold">倍率</label>
                     <input
                       type="number"
                       min="0.1"
