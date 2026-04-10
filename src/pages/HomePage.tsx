@@ -106,7 +106,7 @@ export default function HomePage() {
                 <span className="text-[#538bb0] font-bold">v0.2.0</span>
                 <span className="text-slate-500 text-xs">2026-04-04</span>
               </div>
-              <p className="text-slate-300 mb-2">ブラウザ表示での動作が安定。OBSウインドウキャプチャで配信利用可能に。</p>
+              <p className="text-slate-300 mb-2">OBS Custom Dock + Browser Source での安定動作を実現。パネル配置の個別調整に対応。</p>
               <div className="mb-2">
                 <p className="text-emerald-400 text-xs font-bold mb-1">新機能</p>
                 <ul className="text-slate-400 space-y-0.5 ml-3 text-xs">
@@ -135,6 +135,25 @@ export default function HomePage() {
               </div>
               <p className="text-slate-300">初回リリース。スコアボード・BSO・走者・打順カード・投手情報・演出エフェクト・BroadcastChannel同期。</p>
             </div>
+          </div>
+        </div>
+
+        {/* 問い合わせ CTA */}
+        <div className="mb-12">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-[#538bb0]/30 rounded-xl p-6 text-center">
+            <h2 className="text-lg font-bold text-[#538bb0] mb-2">カスタマイズ・導入サポート</h2>
+            <p className="text-slate-400 text-sm mb-4">
+              チームロゴの追加、配信画面デザイン、OBSセットアップ代行など、お気軽にご相談ください。
+            </p>
+            <a
+              href="https://share-na2.hsforms.com/2T1pQ6j2sQzajdd3AIDeWqgcy93d?utm_source=https://tsubasagit.github.io/yakyuu/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-[#538bb0] hover:bg-[#3d6f94] text-white font-bold px-8 py-3 rounded-lg transition-colors"
+            >
+              お問い合わせはこちら
+            </a>
+            <p className="text-slate-600 text-xs mt-2">AppTalentHub Inc.</p>
           </div>
         </div>
 

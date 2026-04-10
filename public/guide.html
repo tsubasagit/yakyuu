@@ -3,7 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>yakyuu — OBS セットアップガイド</title>
+  <title>yakyuu OBS設定ガイド — 野球配信スコアボードの始め方【図解5ステップ】</title>
+  <meta name="description" content="OBS Studioで野球ライブ配信にスコアボードを重ねて表示する方法を、スクリーンショットと操作動画付きで解説。カスタムドック＋ブラウザソースの設定を5ステップで完了。初心者でも5分で設定できます。" />
+  <meta name="keywords" content="OBS,野球,スコアボード,オーバーレイ,設定,ブラウザソース,カスタムドック,ライブ配信,YouTube,配信,草野球" />
+  <meta name="author" content="AppTalentHub Inc." />
+  <link rel="canonical" href="https://tsubasagit.github.io/yakyuu/guide.html" />
+  <meta property="og:title" content="yakyuu OBS設定ガイド — 野球配信スコアボードの始め方【図解5ステップ】" />
+  <meta property="og:description" content="OBSで野球配信にスコアボードを表示する方法をスクショ・動画付きで解説。初心者でも5分で完了。" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://tsubasagit.github.io/yakyuu/guide.html" />
+  <meta property="og:site_name" content="yakyuu" />
+  <meta property="og:locale" content="ja_JP" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="yakyuu OBS設定ガイド — 野球配信スコアボードの始め方" />
+  <meta name="twitter:description" content="OBSで野球配信にスコアボードを表示する方法をスクショ・動画付きで解説。初心者でも5分。" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -214,7 +227,12 @@
     <p class="subtitle">
       <span class="badge">OBS Custom Dock</span>
       <span class="badge">Browser Source</span>
-      yakyuu スコアボードオーバーレイを OBS Studio で使用するための設定手順
+      <span class="badge" style="background:#22c55e;">初心者OK</span>
+      <span class="badge" style="background:#a855f7;">約5分で完了</span>
+    </p>
+    <p style="color:#94a3b8; font-size:0.95rem; margin-bottom:2rem;">
+      OBS Studio で野球のライブ配信にテレビ中継風のスコアボードを重ねて表示するための設定手順です。<br>
+      <strong style="color:#e2e8f0;">YouTube や Twitch で野球配信をしている方</strong>なら、このガイド通りに進めるだけで設定完了します。
     </p>
 
     <!-- デモ動画 -->
@@ -421,9 +439,38 @@
       </table>
     </div>
 
+    <!-- 問い合わせ CTA -->
+    <div class="step" style="border-color:#538bb0; background:linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+      <div class="step-header">
+        <h2 style="color:#538bb0;">カスタマイズ・導入サポート</h2>
+      </div>
+      <p style="margin-bottom:0.8rem;">
+        「自チームのロゴを入れたい」「スコア入力を自動化したい」「配信画面全体をデザインしてほしい」など、
+        カスタマイズや導入のご相談はお気軽にどうぞ。
+      </p>
+      <ul style="margin-bottom:1rem; padding-left:1.2rem;">
+        <li>チームロゴ・カラーのカスタマイズ</li>
+        <li>配信画面デザインの一括制作</li>
+        <li>OBS セットアップの代行サポート</li>
+        <li>スコア入力の自動化（API連携）</li>
+      </ul>
+      <a href="https://share-na2.hsforms.com/2T1pQ6j2sQzajdd3AIDeWqgcy93d?utm_source=https://tsubasagit.github.io/yakyuu/guide.html"
+         target="_blank" rel="noopener noreferrer"
+         style="display:inline-block; background:#538bb0; color:#fff; font-weight:bold; padding:0.75rem 2rem; border-radius:8px; text-decoration:none; font-size:0.95rem; transition:background 0.2s;"
+         onmouseover="this.style.background='#3d6f94'" onmouseout="this.style.background='#538bb0'">
+        お問い合わせはこちら
+      </a>
+      <p style="color:#64748b; font-size:0.75rem; margin-top:0.5rem;">AppTalentHub Inc. が開発・サポートしています</p>
+    </div>
+
     <footer>
       <p>yakyuu — 野球中継スコアボードオーバーレイ</p>
-      <p><a href="https://github.com/tsubasagit/yakyuu">GitHub</a> | <a href="./#/control">コントロール</a> | <a href="./#/overlay">オーバーレイ</a></p>
+      <p>
+        <a href="https://github.com/tsubasagit/yakyuu">GitHub</a> |
+        <a href="./#/control">コントロール</a> |
+        <a href="./#/overlay">オーバーレイ</a> |
+        <a href="https://apptalenthub.co.jp" target="_blank" rel="noopener noreferrer">AppTalentHub</a>
+      </p>
       <p>&copy; AppTalentHub Inc.</p>
     </footer>
   </div>
