@@ -95,6 +95,8 @@ interface GameActions {
   addStrike: () => void
   addOut: () => void
   resetCount: () => void
+  applyStrikeout: () => void
+  applyWalkPreset: () => void
   advanceInning: () => void
   setRunner: (base: keyof Runners, on: boolean) => void
   addRun: (team: 'away' | 'home') => void
@@ -190,6 +192,29 @@ export const useGameStore = create<GameStore>()(
 
       resetCount: () =>
         set((s) => ({ count: { ...s.count, balls: 0, strikes: 0 } })),
+
+      /** 三振プリセット: 1回の set() でアウト加算+投球数+チェンジ判定まで完結 */
+      applyStrikeout: () =>
+        set((s) => {
+          const pitchKey = s.currentHalf === 'top' ? 'homePitchCount' : 'awayPitchCount'
+          const histKey = getDefendingHistKey(s.currentHalf)
+          let updatedHist = incrementActivePitcherField(s[histKey], 'pitchCount')
+          updatedHist = incrementActivePitcherField(updatedHist, 'outsRecorded')
+          const outs = s.count.outs + 1
+          if (outs >= 3) {
+            return { ...advanceInningPatch(s), [pitchKey]: s[pitchKey] + 1, [histKey]: updatedHist }
+          }
+          return { count: { balls: 0, strikes: 0, outs }, [pitchKey]: s[pitchKey] + 1, [histKey]: updatedHist }
+        }),
+
+      /** 四球プリセット: 1回の set() で走者押し出し+投球数まで完結 */
+      applyWalkPreset: () =>
+        set((s) => {
+          const pitchKey = s.currentHalf === 'top' ? 'homePitchCount' : 'awayPitchCount'
+          const histKey = getDefendingHistKey(s.currentHalf)
+          const updatedHist = incrementActivePitcherField(s[histKey], 'pitchCount')
+          return { ...applyWalk(s), [pitchKey]: s[pitchKey] + 1, [histKey]: updatedHist }
+        }),
 
       advanceInning: () => set((s) => advanceInningPatch(s)),
 
@@ -373,6 +398,7 @@ export const useGameStore = create<GameStore>()(
               stat: formatBatterStat(player),
               statLabel: '',
             },
+            count: { ...s.count, balls: 0, strikes: 0 },
           }
         }),
 
@@ -629,7 +655,9 @@ export const useGameStore = create<GameStore>()(
 )
 
 // subscribe でstate変更時に自動ブロードキャスト（関数を含まないデータのみ送信）
+// オーバーレイ側では受信専用とし、ブロードキャストしない（状態ピンポン防止）
 useGameStore.subscribe((state) => {
+  if (_preventPersistWrites) return
   broadcastState(extractGameState(state))
 })
 

@@ -9,6 +9,8 @@ export default function CountControl() {
   const subtractBall = useGameStore((s) => s.subtractBall)
   const subtractStrike = useGameStore((s) => s.subtractStrike)
   const subtractOut = useGameStore((s) => s.subtractOut)
+  const applyStrikeout = useGameStore((s) => s.applyStrikeout)
+  const applyWalkPreset = useGameStore((s) => s.applyWalkPreset)
 
   return (
     <div className="bg-gray-800 rounded-lg p-4 space-y-3">
@@ -94,22 +96,13 @@ export default function CountControl() {
       {/* プリセット */}
       <div className="flex gap-2 pt-2 border-t border-gray-700">
         <button
-          onClick={() => {
-            addStrike()
-            addStrike()
-            addStrike()
-          }}
+          onClick={applyStrikeout}
           className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded text-xs font-bold"
         >
           三振
         </button>
         <button
-          onClick={() => {
-            addBall()
-            addBall()
-            addBall()
-            addBall()
-          }}
+          onClick={applyWalkPreset}
           className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded text-xs font-bold"
         >
           四球

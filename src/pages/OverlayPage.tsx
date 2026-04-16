@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBroadcastSync } from '../hooks/useBroadcastSync'
-import { useStorageSync } from '../hooks/useStorageSync'
 import { useGameStore, setPreventPersistWrites } from '../store/useGameStore'
 import { requestState } from '../lib/sync'
 import { loadOverlayCache } from '../lib/overlayCache'
@@ -142,7 +141,8 @@ export default function OverlayPage() {
   }, [])
 
   useBroadcastSync()
-  useStorageSync()
+  // useStorageSync は削除: オーバーレイはBroadcastChannel経由（コントロールからの一方通行）のみで同期。
+  // localStorage ポーリングとの二重受信による状態ピンポン（スコアボード点滅）を防止する。
   useOverlayHeartbeat()
 
   // マウント時: キャッシュから復元 → コントロールパネルに最新ステートを要求
