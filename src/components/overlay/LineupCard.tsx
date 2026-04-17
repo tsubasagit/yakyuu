@@ -2,7 +2,7 @@ import { useGameStore } from '../../store/useGameStore'
 import type { PlayerInfo } from '../../types'
 import { formatBatterStat } from '../../types'
 
-export default function LineupCard() {
+export default function LineupCard({ side: sideProp }: { side?: 'away' | 'home' } = {}) {
   const awayTeam = useGameStore((s) => s.awayTeam)
   const homeTeam = useGameStore((s) => s.homeTeam)
   const awayLineup = useGameStore((s) => s.awayLineup)
@@ -10,17 +10,35 @@ export default function LineupCard() {
   const currentHalf = useGameStore((s) => s.currentHalf)
   const awayBatterIndex = useGameStore((s) => s.awayBatterIndex)
   const homeBatterIndex = useGameStore((s) => s.homeBatterIndex)
-  const pitcher = useGameStore((s) => s.pitcher)
-  const pitchCount = useGameStore((s) => s.currentHalf === 'top' ? s.homePitchCount : s.awayPitchCount)
-  // コントロールパネルで選択中のチームに連動
+  const storePitcher = useGameStore((s) => s.pitcher)
+  const awayPitcherHistory = useGameStore((s) => s.awayPitcherHistory)
+  const homePitcherHistory = useGameStore((s) => s.homePitcherHistory)
+  const awayPitchCount = useGameStore((s) => s.awayPitchCount)
+  const homePitchCount = useGameStore((s) => s.homePitchCount)
+  // コントロールパネルで選択中のチームに連動（両チーム表示モード時は props で上書き）
   const displayTeam = useGameStore((s) => s.lineupDisplayTeam ?? (currentHalf === 'top' ? 'away' : 'home'))
 
-  const side = displayTeam
+  const side = sideProp ?? displayTeam
   const team = side === 'away' ? awayTeam : homeTeam
   const lineup = side === 'away' ? awayLineup : homeLineup
   const currentIdx = side === 'away' ? awayBatterIndex : homeBatterIndex
   const isAttacking = (side === 'away' && currentHalf === 'top') ||
     (side === 'home' && currentHalf === 'bottom')
+
+  // 表示対象チームに対する相手投手（自分が攻撃なら相手が投球中）
+  const opposingHistory = side === 'away' ? homePitcherHistory : awayPitcherHistory
+  const opposingActive = opposingHistory.find((p) => p.isActive)
+  const opposingPitchCount = side === 'away' ? homePitchCount : awayPitchCount
+  // 履歴に active pitcher がいればそれを使い、無ければ現攻撃時のみ store.pitcher を採用
+  const pitcher: PlayerInfo = opposingActive
+    ? {
+        name: opposingActive.name,
+        number: opposingActive.number,
+        stat: opposingActive.record,
+        statLabel: opposingActive.appearances ? `${opposingActive.appearances}登板` : '',
+      }
+    : (isAttacking ? storePitcher : { name: '', number: '', stat: '', statLabel: '' })
+  const pitchCount = opposingActive ? opposingActive.pitchCount : (isAttacking ? opposingPitchCount : 0)
 
   const batters = lineup.slice(0, 9)
   const hasPlayers = batters.some((p) => p.name.length > 0)

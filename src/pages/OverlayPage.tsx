@@ -158,6 +158,7 @@ export default function OverlayPage() {
   const scale = useViewportScale()
   const overlayScale = useGameStore((s) => s.overlayScale ?? 1)
   const positions = useGameStore((s) => s.overlayPositions)
+  const showBothLineups = useGameStore((s) => s.showBothLineups ?? false)
 
   // オーバーレイページでのみスクロールを無効化
   useEffect(() => {
@@ -185,10 +186,21 @@ export default function OverlayPage() {
         <GameTimer />
       </DraggableBox>
 
-      {/* 両チーム打順 — 右上 */}
-      <DraggableBox id="lineup" scale={overlayScale * (positions?.lineup?.scale ?? 1)}>
-        <LineupCard />
-      </DraggableBox>
+      {/* 打順 — 右上（片側）or 両チーム同時表示 */}
+      {showBothLineups ? (
+        <>
+          <DraggableBox id="lineup_away" scale={overlayScale * (positions?.lineup_away?.scale ?? 1)}>
+            <LineupCard side="away" />
+          </DraggableBox>
+          <DraggableBox id="lineup_home" scale={overlayScale * (positions?.lineup_home?.scale ?? 1)}>
+            <LineupCard side="home" />
+          </DraggableBox>
+        </>
+      ) : (
+        <DraggableBox id="lineup" scale={overlayScale * (positions?.lineup?.scale ?? 1)}>
+          <LineupCard />
+        </DraggableBox>
+      )}
 
       {/* 選手情報 — 左下 */}
       <DraggableBox id="playerInfo" scale={overlayScale * (positions?.playerInfo?.scale ?? 1)}>

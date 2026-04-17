@@ -127,6 +127,8 @@ export interface GameState {
   overlayScale: number
   /** コントロールパネルで選択中のチーム。オーバーレイの打順表示に連動する */
   lineupDisplayTeam: 'away' | 'home'
+  /** 両チームの打順を同時にオーバーレイに表示するか */
+  showBothLineups: boolean
 }
 
 export const initialPlayerInfo: PlayerInfo = {
@@ -187,6 +189,8 @@ export const DEFAULT_OVERLAY_POSITIONS: Record<string, OverlayPosition> = {
   scoreboard: { x: 24, y: 24 },
   timer: { x: 24, y: 160 },
   lineup: { x: 1420, y: 24 },
+  lineup_away: { x: 1420, y: 24 },
+  lineup_home: { x: 1420, y: 420 },
   playerInfo: { x: 24, y: 1020 },
   playLog: { x: 1560, y: 800 },
   mascot: { x: 1740, y: 900 },
@@ -230,6 +234,7 @@ export const initialGameState: GameState = {
   overlayPositions: { ...DEFAULT_OVERLAY_POSITIONS },
   overlayScale: 1,
   lineupDisplayTeam: 'away',
+  showBothLineups: false,
 }
 
 export { emptyLineup }

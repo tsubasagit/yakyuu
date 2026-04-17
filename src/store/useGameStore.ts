@@ -41,7 +41,7 @@ const DATA_KEYS: (keyof GameState)[] = [
   'awayPitchCount', 'homePitchCount', 'awayPitcherHistory', 'homePitcherHistory',
   'gameStartTime', 'ticker', 'activeEffect', 'effectTimestamp',
   'showMascot', 'mascotMode', 'mascotImages', 'autoChangeEffect', 'showWaitingScreen',
-  'overlayPositions', 'overlayScale', 'lineupDisplayTeam',
+  'overlayPositions', 'overlayScale', 'lineupDisplayTeam', 'showBothLineups',
 ]
 
 export function extractGameState(store: GameState): GameState {
@@ -140,6 +140,7 @@ interface GameActions {
   resetOverlayPositions: () => void
   setOverlayScale: (scale: number) => void
   setLineupDisplayTeam: (team: 'away' | 'home') => void
+  setShowBothLineups: (show: boolean) => void
 }
 
 type GameStore = GameState & GameActions
@@ -587,6 +588,8 @@ export const useGameStore = create<GameStore>()(
         set({ overlayScale: Math.max(0.5, Math.min(3, scale)) }),
 
       setLineupDisplayTeam: (team) => set({ lineupDisplayTeam: team }),
+
+      setShowBothLineups: (show) => set({ showBothLineups: show }),
     }),
     {
       name: 'yakyuu-game-state',
