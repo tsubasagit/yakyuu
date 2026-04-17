@@ -317,10 +317,41 @@ function TeamLineupPanel({ side }: { side: 'away' | 'home' }) {
   )
 }
 
+function LineupDisplayModeToggle() {
+  const showBothLineups = useGameStore((s) => s.showBothLineups ?? false)
+  const setShowBothLineups = useGameStore((s) => s.setShowBothLineups)
+
+  return (
+    <div className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 flex items-center justify-between">
+      <div>
+        <div className="text-white text-sm font-bold">オーバーレイの打順表示</div>
+        <div className="text-gray-400 text-[11px]">
+          {showBothLineups ? '両チーム同時に表示中（ドラッグで位置調整）' : '攻撃中チームのみ表示（自動切替）'}
+        </div>
+      </div>
+      <button
+        onClick={() => setShowBothLineups(!showBothLineups)}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+          showBothLineups ? 'bg-accent' : 'bg-gray-600'
+        }`}
+        aria-pressed={showBothLineups}
+        aria-label="両チーム同時表示"
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+            showBothLineups ? 'translate-x-6' : 'translate-x-1'
+          }`}
+        />
+      </button>
+    </div>
+  )
+}
+
 export default function LineupControl() {
   return (
     <div className="space-y-3">
       <h2 className="text-white font-bold text-lg">打順・選手</h2>
+      <LineupDisplayModeToggle />
       <TeamLineupPanel side="away" />
       <TeamLineupPanel side="home" />
     </div>
