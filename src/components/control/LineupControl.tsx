@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import type { LineupPlayer, Position } from '../../types'
 import { CARP_LINEUP, HAWKS_LINEUP, formatInningsPitched } from '../../types'
-import { parseLineupCsv } from '../../lib/csvImport'
+import { parseLineupCsv, lineupToCsv, downloadCsv } from '../../lib/csvImport'
 
 const POSITIONS: Position[] = ['投', '捕', '一', '二', '三', '遊', '左', '中', '右', 'DH']
 
@@ -271,6 +271,20 @@ function TeamLineupPanel({ side }: { side: 'away' | 'home' }) {
           className="bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold"
         >
           CSV読込
+        </button>
+        <button
+          onClick={() => downloadCsv('yakyuu_lineup_sample.csv', lineupToCsv(CARP_LINEUP))}
+          className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded text-xs"
+          title="読み込めるCSVのサンプル（広島カープ）をダウンロード"
+        >
+          サンプルCSV出力
+        </button>
+        <button
+          onClick={() => downloadCsv(`yakyuu_lineup_${side}.csv`, lineupToCsv(lineup))}
+          className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded text-xs"
+          title="現在の打順をCSVとしてダウンロード"
+        >
+          現打順を出力
         </button>
         <button
           onClick={() => setLineup(side, [...CARP_LINEUP])}

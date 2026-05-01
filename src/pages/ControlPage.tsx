@@ -10,6 +10,7 @@ import LineupControl from '../components/control/LineupControl'
 import TickerControl from '../components/control/TickerControl'
 import EffectControl from '../components/control/EffectControl'
 import MascotControl from '../components/control/MascotControl'
+import VisibilityControl from '../components/control/VisibilityControl'
 import { useGameStore, extractGameState } from '../store/useGameStore'
 import { broadcastState, onStateRequest } from '../lib/sync'
 
@@ -52,6 +53,7 @@ export default function ControlPage() {
   usePeriodicBroadcast()
 
   const allSections: Section[] = [
+    { id: 'visibility', label: '表示切替', component: <VisibilityControl /> },
     { id: 'game', label: '試合管理', component: <GameControl /> },
     { id: 'inning', label: 'イニング', component: <InningControl /> },
     { id: 'count', label: 'カウント', component: <CountControl /> },

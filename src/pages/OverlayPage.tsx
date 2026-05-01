@@ -159,6 +159,8 @@ export default function OverlayPage() {
   const overlayScale = useGameStore((s) => s.overlayScale ?? 1)
   const positions = useGameStore((s) => s.overlayPositions)
   const showBothLineups = useGameStore((s) => s.showBothLineups ?? false)
+  const visibility = useGameStore((s) => s.overlayVisibility)
+  const isVisible = (id: string) => visibility?.[id] !== false
 
   // オーバーレイページでのみスクロールを無効化
   useEffect(() => {
@@ -177,43 +179,53 @@ export default function OverlayPage() {
       className="relative select-none pointer-events-none"
     >
       {/* スコアボード（BSO・走者・球数 統合） — 左上 */}
-      <DraggableBox id="scoreboard" scale={overlayScale * (positions?.scoreboard?.scale ?? 1)}>
-        <Scoreboard />
-      </DraggableBox>
-
-      {/* 経過時間 */}
-      <DraggableBox id="timer" scale={overlayScale * (positions?.timer?.scale ?? 1)}>
-        <GameTimer />
-      </DraggableBox>
-
-      {/* 打順 — 右上（片側）or 両チーム同時表示 */}
-      {showBothLineups ? (
-        <>
-          <DraggableBox id="lineup_away" scale={overlayScale * (positions?.lineup_away?.scale ?? 1)}>
-            <LineupCard side="away" />
-          </DraggableBox>
-          <DraggableBox id="lineup_home" scale={overlayScale * (positions?.lineup_home?.scale ?? 1)}>
-            <LineupCard side="home" />
-          </DraggableBox>
-        </>
-      ) : (
-        <DraggableBox id="lineup" scale={overlayScale * (positions?.lineup?.scale ?? 1)}>
-          <LineupCard />
+      {isVisible('scoreboard') && (
+        <DraggableBox id="scoreboard" scale={overlayScale * (positions?.scoreboard?.scale ?? 1)}>
+          <Scoreboard />
         </DraggableBox>
       )}
 
+      {/* 経過時間 */}
+      {isVisible('timer') && (
+        <DraggableBox id="timer" scale={overlayScale * (positions?.timer?.scale ?? 1)}>
+          <GameTimer />
+        </DraggableBox>
+      )}
+
+      {/* 打順 — 右上（片側）or 両チーム同時表示 */}
+      {isVisible('lineup') && (
+        showBothLineups ? (
+          <>
+            <DraggableBox id="lineup_away" scale={overlayScale * (positions?.lineup_away?.scale ?? 1)}>
+              <LineupCard side="away" />
+            </DraggableBox>
+            <DraggableBox id="lineup_home" scale={overlayScale * (positions?.lineup_home?.scale ?? 1)}>
+              <LineupCard side="home" />
+            </DraggableBox>
+          </>
+        ) : (
+          <DraggableBox id="lineup" scale={overlayScale * (positions?.lineup?.scale ?? 1)}>
+            <LineupCard />
+          </DraggableBox>
+        )
+      )}
+
       {/* 選手情報 — 左下 */}
-      <DraggableBox id="playerInfo" scale={overlayScale * (positions?.playerInfo?.scale ?? 1)}>
-        <PlayerInfo />
-      </DraggableBox>
+      {isVisible('playerInfo') && (
+        <DraggableBox id="playerInfo" scale={overlayScale * (positions?.playerInfo?.scale ?? 1)}>
+          <PlayerInfo />
+        </DraggableBox>
+      )}
 
       {/* 経過ログ — 右下 */}
-      <DraggableBox id="playLog" scale={overlayScale * (positions?.playLog?.scale ?? 1)}>
-        <PlayLog />
-      </DraggableBox>
+      {isVisible('playLog') && (
+        <DraggableBox id="playLog" scale={overlayScale * (positions?.playLog?.scale ?? 1)}>
+          <PlayLog />
+        </DraggableBox>
+      )}
 
       {/* 速報テロップ — 最下部 */}
-      <Ticker />
+      {isVisible('ticker') && <Ticker />}
 
       {/* マスコット — 右下 */}
       <DraggableBox id="mascot">

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { EffectType, GameState, HalfInning, LineupPlayer, MascotMode, OverlayPosition, PitcherAppearance, PlayerInfo, Runners } from '../types'
-import { initialGameState, initialPlayerInfo, formatBatterStat, DEFAULT_OVERLAY_POSITIONS } from '../types'
+import { initialGameState, initialPlayerInfo, formatBatterStat, DEFAULT_OVERLAY_POSITIONS, DEFAULT_OVERLAY_VISIBILITY } from '../types'
 import { broadcastState } from '../lib/sync'
 import { backupToIDB, restoreFromIDB } from '../lib/idbBackup'
 
@@ -41,7 +41,7 @@ const DATA_KEYS: (keyof GameState)[] = [
   'awayPitchCount', 'homePitchCount', 'awayPitcherHistory', 'homePitcherHistory',
   'gameStartTime', 'ticker', 'activeEffect', 'effectTimestamp',
   'showMascot', 'mascotMode', 'mascotImages', 'autoChangeEffect', 'showWaitingScreen',
-  'overlayPositions', 'overlayScale', 'lineupDisplayTeam', 'showBothLineups',
+  'overlayPositions', 'overlayScale', 'lineupDisplayTeam', 'showBothLineups', 'overlayVisibility',
 ]
 
 export function extractGameState(store: GameState): GameState {
@@ -141,6 +141,8 @@ interface GameActions {
   setOverlayScale: (scale: number) => void
   setLineupDisplayTeam: (team: 'away' | 'home') => void
   setShowBothLineups: (show: boolean) => void
+  setOverlayVisibility: (id: string, visible: boolean) => void
+  resetOverlayVisibility: () => void
 }
 
 type GameStore = GameState & GameActions
@@ -590,6 +592,14 @@ export const useGameStore = create<GameStore>()(
       setLineupDisplayTeam: (team) => set({ lineupDisplayTeam: team }),
 
       setShowBothLineups: (show) => set({ showBothLineups: show }),
+
+      setOverlayVisibility: (id, visible) =>
+        set((s) => ({
+          overlayVisibility: { ...(s.overlayVisibility ?? {}), [id]: visible },
+        })),
+
+      resetOverlayVisibility: () =>
+        set({ overlayVisibility: { ...DEFAULT_OVERLAY_VISIBILITY } }),
     }),
     {
       name: 'yakyuu-game-state',

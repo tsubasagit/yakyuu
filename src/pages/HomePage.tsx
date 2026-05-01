@@ -11,7 +11,7 @@ export default function HomePage() {
             野球ライブ配信用スコアボードオーバーレイ
           </p>
           <p className="text-slate-500 text-sm mt-2">OBSブラウザソース対応 / サーバー不要 / 無料</p>
-          <p className="text-slate-600 text-xs mt-3">v0.3.0</p>
+          <p className="text-slate-600 text-xs mt-3">v0.4.0</p>
         </div>
 
         {/* リンクカード */}
@@ -101,6 +101,21 @@ export default function HomePage() {
         <div className="mb-12">
           <h2 className="text-xl font-bold mb-4 border-b border-slate-700 pb-2">更新履歴</h2>
           <div className="space-y-4 text-sm">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[#538bb0] font-bold">v0.4.0</span>
+                <span className="text-slate-500 text-xs">2026-05-01</span>
+              </div>
+              <p className="text-slate-300 mb-2">コントロール側からオーバーレイの表示要素を個別ON/OFFできるように。CSVサンプル出力でフォーマット見本もダウンロード可能に。</p>
+              <div className="mb-2">
+                <p className="text-emerald-400 text-xs font-bold mb-1">新機能</p>
+                <ul className="text-slate-400 space-y-0.5 ml-3 text-xs">
+                  <li>- 「表示切替」セクション（スコアボード・経過時間・打順・選手情報・経過ログ・速報テロップを個別ON/OFF）</li>
+                  <li>- 「サンプルCSV出力」ボタン（CSV読込フォーマットの見本をダウンロード）</li>
+                  <li>- 「現打順を出力」ボタン（編集中の打順をCSVで書き出し→次回読込で再利用可能）</li>
+                </ul>
+              </div>
+            </div>
             <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-[#538bb0] font-bold">v0.3.0</span>

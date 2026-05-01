@@ -1,5 +1,41 @@
 import type { LineupPlayer, Position } from '../types'
 
+const CSV_HEADER = '順番,名前,背番号,守備,打率,HR,打点,OPS,登板数,勝敗'
+
+/** LineupPlayer[] をインポート互換のCSVテキストに変換する */
+export function lineupToCsv(lineup: LineupPlayer[]): string {
+  const rows = lineup.map((p) => {
+    const isPitcher = p.order === 10
+    return [
+      p.order,
+      p.name,
+      p.number,
+      p.position,
+      isPitcher ? '' : (p.battingAvg ?? ''),
+      isPitcher ? '' : (p.homeRuns ?? ''),
+      isPitcher ? '' : (p.rbi ?? ''),
+      isPitcher ? '' : (p.ops ?? ''),
+      isPitcher ? (p.appearances ?? '') : '',
+      isPitcher ? (p.record ?? '') : '',
+    ].join(',')
+  })
+  return [CSV_HEADER, ...rows].join('\r\n')
+}
+
+/** ブラウザでファイルとしてCSVをダウンロードさせる */
+export function downloadCsv(filename: string, csv: string): void {
+  // Excel互換のためBOM付きUTF-8で出力
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
 const VALID_POSITIONS: Position[] = ['投', '捕', '一', '二', '三', '遊', '左', '中', '右', 'DH']
 
 /**

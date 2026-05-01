@@ -129,6 +129,28 @@ export interface GameState {
   lineupDisplayTeam: 'away' | 'home'
   /** 両チームの打順を同時にオーバーレイに表示するか */
   showBothLineups: boolean
+  /** オーバーレイ各要素の表示/非表示。未定義は表示扱い */
+  overlayVisibility: Record<string, boolean>
+}
+
+/** オーバーレイ表示切替対象のID（mascot/waitingScreen は既存フラグで制御） */
+export const OVERLAY_VISIBILITY_IDS = [
+  'scoreboard',
+  'timer',
+  'lineup',
+  'playerInfo',
+  'playLog',
+  'ticker',
+] as const
+export type OverlayVisibilityId = typeof OVERLAY_VISIBILITY_IDS[number]
+
+export const DEFAULT_OVERLAY_VISIBILITY: Record<string, boolean> = {
+  scoreboard: true,
+  timer: true,
+  lineup: true,
+  playerInfo: true,
+  playLog: true,
+  ticker: true,
 }
 
 export const initialPlayerInfo: PlayerInfo = {
@@ -235,6 +257,7 @@ export const initialGameState: GameState = {
   overlayScale: 1,
   lineupDisplayTeam: 'away',
   showBothLineups: false,
+  overlayVisibility: { ...DEFAULT_OVERLAY_VISIBILITY },
 }
 
 export { emptyLineup }
