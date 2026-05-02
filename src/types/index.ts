@@ -131,6 +131,8 @@ export interface GameState {
   showBothLineups: boolean
   /** オーバーレイ各要素の表示/非表示。未定義は表示扱い */
   overlayVisibility: Record<string, boolean>
+  /** 打順テーブル各列のオーバーレイ表示/非表示。未定義は表示扱い */
+  lineupColumnVisibility: Record<string, boolean>
 }
 
 /** オーバーレイ表示切替対象のID（mascot/waitingScreen は既存フラグで制御） */
@@ -151,6 +153,18 @@ export const DEFAULT_OVERLAY_VISIBILITY: Record<string, boolean> = {
   playerInfo: true,
   playLog: true,
   ticker: true,
+}
+
+/** 打順テーブルでオーバーレイ表示を切り替えられる列 */
+export const LINEUP_COLUMN_IDS = ['number', 'battingAvg', 'homeRuns', 'rbi', 'ops'] as const
+export type LineupColumnId = typeof LINEUP_COLUMN_IDS[number]
+
+export const DEFAULT_LINEUP_COLUMN_VISIBILITY: Record<LineupColumnId, boolean> = {
+  number: true,
+  battingAvg: true,
+  homeRuns: true,
+  rbi: true,
+  ops: true,
 }
 
 export const initialPlayerInfo: PlayerInfo = {
@@ -258,6 +272,7 @@ export const initialGameState: GameState = {
   lineupDisplayTeam: 'away',
   showBothLineups: false,
   overlayVisibility: { ...DEFAULT_OVERLAY_VISIBILITY },
+  lineupColumnVisibility: { ...DEFAULT_LINEUP_COLUMN_VISIBILITY },
 }
 
 export { emptyLineup }
