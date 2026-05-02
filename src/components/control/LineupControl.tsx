@@ -1,10 +1,47 @@
 import { useRef, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
-import type { LineupPlayer, Position } from '../../types'
+import type { LineupColumnId, LineupPlayer, Position } from '../../types'
 import { CARP_LINEUP, HAWKS_LINEUP, formatInningsPitched } from '../../types'
 import { parseLineupCsv, lineupToCsv, downloadCsv } from '../../lib/csvImport'
 
 const POSITIONS: Position[] = ['投', '捕', '一', '二', '三', '遊', '左', '中', '右', 'DH']
+
+/** 列ヘッダ内の、オーバーレイON/OFFトグル付きラベル */
+function ColHeader({ id, label, width }: { id: LineupColumnId; label: string; width: string }) {
+  const visible = useGameStore((s) => s.lineupColumnVisibility?.[id] ?? true)
+  const setVis = useGameStore((s) => s.setLineupColumnVisibility)
+  return (
+    <label
+      className={`${width} shrink-0 flex items-center justify-center gap-0.5 cursor-pointer hover:text-white`}
+      title={`オーバーレイに「${label}」を${visible ? '表示中（クリックで非表示）' : '非表示（クリックで表示）'}`}
+    >
+      <input
+        type="checkbox"
+        checked={visible}
+        onChange={(e) => setVis(id, e.target.checked)}
+        className="w-2.5 h-2.5 accent-accent cursor-pointer"
+      />
+      <span>{label}</span>
+    </label>
+  )
+}
+
+/** 打順テーブル列ヘッダ。守備・選手名は固定表示、その他はON/OFF切替可能 */
+function LineupColumnHeader() {
+  return (
+    <div className="flex items-center gap-1.5 px-1.5 text-[10px] text-gray-400 font-bold">
+      <span className="w-4 text-center shrink-0">順</span>
+      <span className="w-12 text-center shrink-0">守備</span>
+      <ColHeader id="number" label="背番" width="w-10" />
+      <span className="flex-1 text-left pl-1">選手名</span>
+      <ColHeader id="battingAvg" label="打率" width="w-12" />
+      <ColHeader id="homeRuns" label="HR" width="w-10" />
+      <ColHeader id="rbi" label="打点" width="w-10" />
+      <ColHeader id="ops" label="OPS" width="w-14" />
+      <span className="w-12 text-center shrink-0"></span>
+    </div>
+  )
+}
 
 function BatterRow({
   player,
@@ -36,6 +73,12 @@ function BatterRow({
           <option key={p} value={p}>{p}</option>
         ))}
       </select>
+      <input
+        className="bg-gray-700 text-white rounded px-1 py-1 text-xs w-10 shrink-0 text-center"
+        placeholder="背番"
+        value={player.number || ''}
+        onChange={(e) => onChange({ ...player, number: e.target.value })}
+      />
       <input
         className="bg-gray-700 text-white rounded px-2 py-1 text-xs flex-1 min-w-0"
         placeholder="名前"
@@ -108,6 +151,12 @@ function PitcherRow({
         <span className="text-red-400 text-xs w-12 shrink-0 text-center font-bold">
           投
         </span>
+        <input
+          className="bg-gray-700 text-white rounded px-1 py-1 text-xs w-10 shrink-0 text-center"
+          placeholder="背番"
+          value={player.number || ''}
+          onChange={(e) => onChange({ ...player, number: e.target.value })}
+        />
         <input
           className="bg-gray-700 text-white rounded px-2 py-1 text-xs flex-1 min-w-0"
           placeholder="投手名"
@@ -307,6 +356,7 @@ function TeamLineupPanel({ side }: { side: 'away' | 'home' }) {
 
       {/* ラインナップ（1-9番打者） */}
       <div className="space-y-0.5">
+        <LineupColumnHeader />
         {lineup.slice(0, 9).map((player, idx) => (
           <BatterRow
             key={player.order}

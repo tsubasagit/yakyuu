@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { EffectType, GameState, HalfInning, LineupPlayer, MascotMode, OverlayPosition, PitcherAppearance, PlayerInfo, Runners } from '../types'
-import { initialGameState, initialPlayerInfo, formatBatterStat, DEFAULT_OVERLAY_POSITIONS, DEFAULT_OVERLAY_VISIBILITY } from '../types'
+import type { EffectType, GameState, HalfInning, LineupColumnId, LineupPlayer, MascotMode, OverlayPosition, PitcherAppearance, PlayerInfo, Runners } from '../types'
+import { initialGameState, initialPlayerInfo, formatBatterStat, DEFAULT_OVERLAY_POSITIONS, DEFAULT_OVERLAY_VISIBILITY, DEFAULT_LINEUP_COLUMN_VISIBILITY } from '../types'
 import { broadcastState } from '../lib/sync'
 import { backupToIDB, restoreFromIDB } from '../lib/idbBackup'
 
@@ -42,6 +42,7 @@ const DATA_KEYS: (keyof GameState)[] = [
   'gameStartTime', 'ticker', 'activeEffect', 'effectTimestamp',
   'showMascot', 'mascotMode', 'mascotImages', 'autoChangeEffect', 'showWaitingScreen',
   'overlayPositions', 'overlayScale', 'lineupDisplayTeam', 'showBothLineups', 'overlayVisibility',
+  'lineupColumnVisibility',
 ]
 
 export function extractGameState(store: GameState): GameState {
@@ -143,6 +144,8 @@ interface GameActions {
   setShowBothLineups: (show: boolean) => void
   setOverlayVisibility: (id: string, visible: boolean) => void
   resetOverlayVisibility: () => void
+  setLineupColumnVisibility: (id: LineupColumnId, visible: boolean) => void
+  resetLineupColumnVisibility: () => void
 }
 
 type GameStore = GameState & GameActions
@@ -600,6 +603,14 @@ export const useGameStore = create<GameStore>()(
 
       resetOverlayVisibility: () =>
         set({ overlayVisibility: { ...DEFAULT_OVERLAY_VISIBILITY } }),
+
+      setLineupColumnVisibility: (id, visible) =>
+        set((s) => ({
+          lineupColumnVisibility: { ...(s.lineupColumnVisibility ?? {}), [id]: visible },
+        })),
+
+      resetLineupColumnVisibility: () =>
+        set({ lineupColumnVisibility: { ...DEFAULT_LINEUP_COLUMN_VISIBILITY } }),
     }),
     {
       name: 'yakyuu-game-state',

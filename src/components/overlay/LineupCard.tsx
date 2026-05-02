@@ -1,6 +1,5 @@
 import { useGameStore } from '../../store/useGameStore'
 import type { PlayerInfo } from '../../types'
-import { formatBatterStat } from '../../types'
 
 export default function LineupCard({ side: sideProp }: { side?: 'away' | 'home' } = {}) {
   const awayTeam = useGameStore((s) => s.awayTeam)
@@ -15,6 +14,12 @@ export default function LineupCard({ side: sideProp }: { side?: 'away' | 'home' 
   const homePitcherHistory = useGameStore((s) => s.homePitcherHistory)
   const awayPitchCount = useGameStore((s) => s.awayPitchCount)
   const homePitchCount = useGameStore((s) => s.homePitchCount)
+  const colVis = useGameStore((s) => s.lineupColumnVisibility)
+  const showNumber = colVis?.number ?? true
+  const showAvg = colVis?.battingAvg ?? true
+  const showHR = colVis?.homeRuns ?? true
+  const showRBI = colVis?.rbi ?? true
+  const showOPS = colVis?.ops ?? true
   // コントロールパネルで選択中のチームに連動（両チーム表示モード時は props で上書き）
   const displayTeam = useGameStore((s) => s.lineupDisplayTeam ?? (currentHalf === 'top' ? 'away' : 'home'))
 
@@ -67,7 +72,6 @@ export default function LineupCard({ side: sideProp }: { side?: 'away' | 'home' 
         {batters.map((player, idx) => {
           if (!player.name) return null
           const isCurrent = idx === currentIdx
-          const statStr = formatBatterStat(player)
           return (
             <div
               key={player.order}
@@ -88,10 +92,30 @@ export default function LineupCard({ side: sideProp }: { side?: 'away' | 'home' 
               <span className="w-5 text-center text-yellow-400/80 font-mono text-[10px]">
                 {player.position}
               </span>
+              {showNumber && player.number && (
+                <span className="text-gray-400 font-mono text-[10px] shrink-0">
+                  #{player.number}
+                </span>
+              )}
               <span className="flex-1 truncate">{player.name}</span>
-              {statStr && (
+              {showAvg && player.battingAvg && (
                 <span className="text-yellow-400/70 font-mono text-[10px] shrink-0">
-                  {statStr}
+                  {player.battingAvg}
+                </span>
+              )}
+              {showHR && player.homeRuns && (
+                <span className="text-yellow-400/70 font-mono text-[10px] shrink-0">
+                  {player.homeRuns}本
+                </span>
+              )}
+              {showRBI && player.rbi && (
+                <span className="text-yellow-400/70 font-mono text-[10px] shrink-0">
+                  {player.rbi}打点
+                </span>
+              )}
+              {showOPS && player.ops && (
+                <span className="text-yellow-400/70 font-mono text-[10px] shrink-0">
+                  OPS{player.ops}
                 </span>
               )}
             </div>
